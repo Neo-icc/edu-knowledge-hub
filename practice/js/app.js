@@ -100,7 +100,21 @@
     return { parts, query };
   }
 
-  function go(hash) { location.hash = hash; }
+  function go(hash) {
+    const target = hash.charAt(0) === "#" ? hash : "#" + hash;
+    let cur = "", tgt = "";
+    try { cur = decodeURIComponent(location.hash); } catch (e) { cur = location.hash; }
+    try { tgt = decodeURIComponent(target); } catch (e) { tgt = target; }
+    if (cur === tgt) { render(); return; }
+    location.hash = target;
+  }
+
+  function scenarioURL() {
+    const qs = [];
+    if (state.scAge) qs.push("age=" + encodeURIComponent(state.scAge));
+    if (state.scAudience && state.scAudience !== "all") qs.push("aud=" + encodeURIComponent(state.scAudience));
+    return "#/scenarios" + (qs.length ? "?" + qs.join("&") : "");
+  }
 
   /* ---------------- 侧栏 ---------------- */
   function navGroups() {
@@ -519,10 +533,12 @@
     </div>`;
 
     const aud = state.audience === "educator" ? "" : state.audience;
-    const heroCopy = { eb: "家长与老师 · 教育者", h1: "孩子这样<br/>我该怎么办", lead: `按 0–3、3–6、6–12、12–18 四个年龄段与课堂情境组织。每个情境都写清：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及什么时候该找专业帮助；课堂活动与一页纸都可直接带走。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/entries", "浏览条目", "ghost"]] };
+    const heroCopy = { eb: "家长与老师 · 教育者", h1: "孩子这样<br/>我该怎么办", lead: `从婴幼儿到高中，按 0–3、3–6、小学、初中、高中 五个学段与课堂情境组织。每个情境都写清：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及什么时候该找专业帮助；课堂活动与一页纸都可直接带走。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/entries", "浏览条目", "ghost"]] };
 
-    const scStrip = S.scenarios
-      .filter((s) => !aud || s.audience.includes(aud))
+    const ageOrder = ["6-12", "12-15", "15-18", "0-3", "3-6", "all"];
+    const scStrip = ageOrder
+      .map((a) => S.scenarios.find((s) => (!aud || s.audience.includes(aud)) && s.age === a))
+      .filter(Boolean)
       .slice(0, 4)
       .map((s) => `<a class="sc-mini" href="#/scenarios?open=${s.id}">
         <span class="sc-mini-age">${esc(AGE_NAME[s.age] || s.age)}</span>
@@ -719,7 +735,7 @@
           </div>
         </div>` : `<div class="triage-actions"><span class="graph-hint">选完前两项即可看到结果。</span></div>`}
 
-      <p class="triage-note"><b>一个判断说明</b>　分诊的 10 个类别和映射是按「家长 / 老师会怎么描述问题」做的编辑判断，不是研究结论。有些情境会同时出现在两类里（如「作业拖拉」既在注意力也在学习），这是有意的——同一个现象从不同入口都该能被找到。</p>
+      <p class="triage-note"><b>一个判断说明</b>　分诊的 11 个类别和映射是按「家长 / 老师会怎么描述问题」做的编辑判断，不是研究结论。有些情境会同时出现在两类里（如「作业拖拉」既在注意力也在学习），这是有意的——同一个现象从不同入口都该能被找到。</p>
     </div>
     ${footHTML()}`;
   }
@@ -729,11 +745,16 @@
     { id: "", name: "全部年龄" },
     { id: "0-3", name: "0–3 岁" },
     { id: "3-6", name: "3–6 岁" },
-    { id: "6-12", name: "6–12 岁" },
-    { id: "12-18", name: "12–18 岁" },
+    { id: "6-12", name: "小学（6–12）" },
+    { id: "12-15", name: "初中（12–15）" },
+    { id: "15-18", name: "高中（15–18）" },
     { id: "all", name: "通用 / 辟谣" },
   ];
-  const AGE_NAME = { "0-3": "0–3 岁", "3-6": "3–6 岁", "6-12": "6–12 岁", "12-18": "12–18 岁", all: "通用" };
+  const AGE_NAME = {
+    "0-3": "0–3 岁", "3-6": "3–6 岁",
+    "6-12": "小学（6–12）", "12-15": "初中（12–15）", "15-18": "高中（15–18）",
+    all: "通用",
+  };
 
   function activityHTML(id) {
     const act = S.activities[id];
@@ -2181,7 +2202,8 @@
     else if (route === "start") { active = "start"; inner = viewTriage(); crumb = '<span class="cur">快速分诊</span>'; }
     else if (route === "scenarios") {
       active = "scenarios";
-      if (query.age) state.scAge = query.age;
+      state.scAge = query.age || "";
+      state.scAudience = query.aud || "";
       inner = viewScenarios(query);
       crumb = '<span class="cur">场景库</span>';
     }
@@ -2198,8 +2220,9 @@
     }
     else if (route === "entries") {
       active = "entries";
-      if (query.domain) state.filter.domain = query.domain;
-      if (query.branch) state.filter.branch = query.branch;
+      state.filter.domain = query.domain || "";
+      state.filter.branch = query.branch || "";
+      state.filter.kind = query.kind || "";
       inner = viewEntries();
       crumb = `<a href="#/entries">条目</a>${state.filter.domain ? `<span class="sep">/</span><span class="cur">${esc(domainOf(state.filter.domain).name)}</span>` : ""}`;
     }
@@ -2288,8 +2311,9 @@
         }
         const f = state.filter;
         const qs = [];
-        if (f.domain) qs.push("domain=" + f.domain);
-        if (f.branch) qs.push("branch=" + f.branch);
+        if (f.domain) qs.push("domain=" + encodeURIComponent(f.domain));
+        if (f.branch) qs.push("branch=" + encodeURIComponent(f.branch));
+        if (f.kind) qs.push("kind=" + encodeURIComponent(f.kind));
         go("#/entries" + (qs.length ? "?" + qs.join("&") : ""));
       });
     });
@@ -2345,10 +2369,10 @@
 
     /* 场景库筛选 */
     document.querySelectorAll("[data-sc-age]").forEach((el) => {
-      el.addEventListener("click", () => { state.scAge = el.dataset.scAge; render(); });
+      el.addEventListener("click", () => { state.scAge = el.dataset.scAge; go(scenarioURL()); });
     });
     document.querySelectorAll("[data-sc-aud]").forEach((el) => {
-      el.addEventListener("click", () => { state.scAudience = el.dataset.scAud; render(); });
+      el.addEventListener("click", () => { state.scAudience = el.dataset.scAud === "all" ? "" : el.dataset.scAud; go(scenarioURL()); });
     });
 
     /* 时间轴领域 */
