@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教育与心智 · 知识图谱</title>
+<meta name="description" content="教育与心智知识图谱：同一入口，三种身份。家长与老师走情境优先，研究者与学者走研究索引。">
+<meta name="color-scheme" content="light dark">
+<script>
+  (function () {
+    var s = null;
+    try { s = localStorage.getItem("hub-theme"); } catch (e) {}
+    var t = s === "dark" || s === "light" ? s
+      : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+<style>
+  :root {
+    --bg: oklch(97% 0.008 75);
+    --bg2: oklch(94% 0.012 75);
+    --paper: oklch(99% 0.004 85);
+    --ink: oklch(20% 0.018 75);
+    --ink2: oklch(38% 0.016 75);
+    --ink3: oklch(52% 0.014 75);
+    --ink5: oklch(66% 0.014 75);
+    --rule: oklch(88% 0.016 75);
+    --rule2: oklch(80% 0.016 75);
+    --accent: oklch(44% 0.155 30);
+    --accent-ink: oklch(99% 0.005 85);
+    --derive: oklch(46% 0.11 252);
+    --serif: "Fraunces", "Noto Serif SC", "Songti SC", Georgia, serif;
+    --sans: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    --shadow: 0 4px 18px oklch(20% 0.02 75 / 0.08), 0 2px 6px oklch(20% 0.02 75 / 0.05);
+  }
+  html[data-theme="dark"] {
+    --bg: oklch(19% 0.010 75);
+    --bg2: oklch(23% 0.012 75);
+    --paper: oklch(26% 0.012 75);
+    --ink: oklch(92% 0.008 85);
+    --ink2: oklch(80% 0.010 80);
+    --ink3: oklch(68% 0.012 75);
+    --ink5: oklch(52% 0.012 75);
+    --rule: oklch(31% 0.014 75);
+    --rule2: oklch(38% 0.014 75);
+    --accent: oklch(70% 0.14 32);
+    --accent-ink: oklch(18% 0.02 75);
+    --derive: oklch(74% 0.10 252);
+    --shadow: 0 4px 18px oklch(0% 0 0 / 0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* 顶栏 */
+  .topbar {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .spacer { flex: 1; }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    padding: 7px 14px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink3);
+    font-size: 0.86rem;
+    transition: all .18s ease;
+  }
+  .tab:hover { color: var(--ink); background: var(--bg2); }
+  .tab.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .theme-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink2);
+    font-size: 1rem;
+    display: grid; place-items: center;
+  }
+  .theme-btn:hover { border-color: var(--rule2); }
+
+  /* 落地页 */
+  .landing {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 48px 20px 72px;
+  }
+  .hero { text-align: center; margin-bottom: 48px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink5);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .hero p { max-width: 58ch; margin: 0 auto; color: var(--ink3); font-size: 1.02rem; }
+
+  .gate {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+  .card:hover { border-color: var(--rule2); box-shadow: var(--shadow); }
+  .tag {
+    align-self: flex-start;
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink5);
+    padding: 3px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+  }
+  .card h2 { font-family: var(--serif); font-weight: 700; font-size: 1.55rem; }
+  .card .lead { color: var(--ink3); font-size: 0.95rem; }
+  .card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .card li { color: var(--ink2); font-size: 0.86rem; padding-left: 18px; position: relative; }
+  .card li::before { content: "·"; position: absolute; left: 4px; color: var(--accent); font-weight: 700; }
+  .card .actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 10px 18px; min-height: 42px;
+    font-size: 0.9rem; font-weight: 500;
+    border-radius: 8px; border: 1px solid transparent;
+    transition: all .18s ease; white-space: nowrap;
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn.ghost { border-color: var(--rule2); color: var(--ink2); background: transparent; }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.study { border-color: var(--rule2); color: var(--derive); background: transparent; }
+  .btn.study:hover { border-color: var(--derive); }
+
+  .note { text-align: center; color: var(--ink5); font-size: 0.82rem; margin-top: 28px; }
+
+  /* iframe 壳 */
+  .frame-wrap { height: calc(100vh - 56px); }
+  iframe { width: 100%; height: 100%; border: none; display: block; background: var(--bg); }
+
+  @media (max-width: 600px) {
+    .topbar { padding: 0 12px; gap: 8px; }
+    .brand { font-size: 0.95rem; }
+    .tab { padding: 6px 10px; font-size: 0.78rem; }
+    .landing { padding: 32px 14px 56px; }
+    .card { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" data-home><span class="dot"></span><span>教育与心智 · 知识图谱</span></a>
+    <div class="spacer"></div>
+    <nav class="tabs" id="tabs">
+      <button class="tab" data-ident="parent">家长</button>
+      <button class="tab" data-ident="teacher">老师</button>
+      <button class="tab" data-ident="researcher">研究者</button>
+    </nav>
+    <button class="theme-btn" id="theme" aria-label="切换主题">◐</button>
+  </header>
+
+  <main id="main">
+    <section class="landing" id="landing">
+      <div class="hero">
+        <span class="eyebrow">One hub · Three identities</span>
+        <h1>一份知识库，三种用法</h1>
+        <p>老师和家长走「情境优先」拿到可执行的做法；研究者与学者走「研究索引」做深度检索与导航。两边读的是同一套教育、心理与儿童发展知识。</p>
+      </div>
+
+      <div class="gate">
+        <div class="card">
+          <span class="tag">给家长与老师</span>
+          <h2>情境优先</h2>
+          <p class="lead">先给能直接用的做法、话术与转介边界，再往下看背后的机制与证据。</p>
+          <ul>
+            <li>按年龄 / 课堂情境快速分诊</li>
+            <li>「可以试 · 先别做 · 可以这样说」三段式</li>
+            <li>2–3 条情境合并成一张 A4，家长会带走</li>
+            <li>机制级关联、术语卡与可核验来源</li>
+          </ul>
+          <div class="actions">
+            <button class="btn primary" data-ident="parent">我是家长</button>
+            <button class="btn ghost" data-ident="teacher">我是老师</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="tag">给研究者与学者</span>
+          <h2>研究索引</h2>
+          <p class="lead">作为索引与工具：按领域浏览 454 条深度条目，逐条看论断、共识与学术分歧。</p>
+          <ul>
+            <li>五大领域 · 454 条标准条目</li>
+            <li>每条含定义、论断、学界共识与学术分歧</li>
+            <li>证据综述与教育应用</li>
+            <li>学者简介与可视化图谱</li>
+          </ul>
+          <div class="actions">
+            <button class="btn study" data-ident="researcher">进入研究索引 →</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">任何时候可通过顶部切换身份，或点击左上角返回入口。身份不锁定，内容不复制。</p>
+    </section>
+
+    <div class="frame-wrap" id="frameWrap" hidden>
+      <iframe id="frame" title="内容区" allow="clipboard-write"></iframe>
+    </div>
+  </main>
+
+<script>
+(function () {
+  var frame = document.getElementById("frame");
+  var frameWrap = document.getElementById("frameWrap");
+  var landing = document.getElementById("landing");
+  var tabs = document.getElementById("tabs");
+  var ident = "landing"; // landing | parent | teacher | researcher
+
+  function setIdentity(next) {
+    ident = next;
+    // 传给 practice 子应用的身份（edu-psych 无身份概念，忽略）
+    try {
+      if (next === "parent" || next === "teacher") localStorage.setItem("atlas-audience", next);
+    } catch (e) {}
+
+    var isLanding = next === "landing";
+    landing.hidden = !isLanding;
+    frameWrap.hidden = isLanding;
+
+    // 顶栏 tab 高亮
+    tabs.querySelectorAll(".tab").forEach(function (t) {
+      t.classList.toggle("on", t.dataset.ident === next);
+    });
+
+    if (isLanding) {
+      frame.removeAttribute("src");
+    } else if (next === "researcher") {
+      frame.src = "research/";
+    } else {
+      frame.src = "practice/";
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  document.querySelectorAll("[data-ident]").forEach(function (el) {
+    el.addEventListener("click", function () { setIdentity(el.dataset.ident); });
+  });
+  document.querySelectorAll("[data-home]").forEach(function (el) {
+    el.addEventListener("click", function (e) { e.preventDefault(); setIdentity("landing"); });
+  });
+
+  var themeBtn = document.getElementById("theme");
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    themeBtn.textContent = t === "dark" ? "☾" : "☀";
+    try { localStorage.setItem("hub-theme", t); } catch (e) {}
+  }
+  themeBtn.addEventListener("click", function () {
+    applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+  applyTheme(document.documentElement.getAttribute("data-theme"));
+
+  setIdentity("landing");
+})();
+</script>
+</body>
+</html>
