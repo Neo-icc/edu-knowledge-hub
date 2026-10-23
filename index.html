@@ -262,10 +262,15 @@
   var frameWrap = document.getElementById("frameWrap");
   var landing = document.getElementById("landing");
   var tabs = document.getElementById("tabs");
-  var ident = "landing"; // landing | parent | teacher | researcher
+  var IDENTS = ["parent", "teacher", "researcher"];
 
-  function setIdentity(next) {
-    ident = next;
+  function identFromHash() {
+    var h = location.hash.replace(/^#\/?/, "").trim();
+    return IDENTS.indexOf(h) > -1 ? h : "landing";
+  }
+
+  function render() {
+    var next = identFromHash();
     // 传给 practice 子应用的身份（edu-psych 无身份概念，忽略）
     try {
       if (next === "parent" || next === "teacher") localStorage.setItem("atlas-audience", next);
@@ -290,25 +295,35 @@
     window.scrollTo({ top: 0 });
   }
 
+  function go(next) {
+    var target = next === "landing" ? "#/" : "#/" + next;
+    if (location.hash === target) { render(); return; }
+    location.hash = target;
+  }
+
   document.querySelectorAll("[data-ident]").forEach(function (el) {
-    el.addEventListener("click", function () { setIdentity(el.dataset.ident); });
+    el.addEventListener("click", function () { go(el.dataset.ident); });
   });
   document.querySelectorAll("[data-home]").forEach(function (el) {
-    el.addEventListener("click", function (e) { e.preventDefault(); setIdentity("landing"); });
+    el.addEventListener("click", function (e) { e.preventDefault(); go("landing"); });
   });
+  window.addEventListener("hashchange", render);
 
   var themeBtn = document.getElementById("theme");
   function applyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     themeBtn.textContent = t === "dark" ? "☾" : "☀";
-    try { localStorage.setItem("hub-theme", t); } catch (e) {}
+    try {
+      localStorage.setItem("hub-theme", t);
+      localStorage.setItem("atlas-theme", t); // 同步给 practice 子应用
+    } catch (e) {}
   }
   themeBtn.addEventListener("click", function () {
     applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
   });
   applyTheme(document.documentElement.getAttribute("data-theme"));
 
-  setIdentity("landing");
+  render();
 })();
 </script>
 </body>
