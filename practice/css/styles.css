@@ -15,9 +15,9 @@
 
   --ink: oklch(19% 0.016 75);
   --ink-2: oklch(31% 0.016 75);
-  --ink-3: oklch(45% 0.016 75);
-  --ink-4: oklch(58% 0.016 75);
-  --ink-5: oklch(70% 0.014 75);
+  --ink-3: oklch(42% 0.016 75);
+  --ink-4: oklch(50% 0.016 75);
+  --ink-5: oklch(58% 0.016 75);
 
   --accent: oklch(44% 0.155 30);
   --accent-2: oklch(52% 0.16 30);
@@ -72,10 +72,10 @@ html[data-theme="dark"] {
   --rule-2: oklch(42% 0.016 75);
 
   --ink: oklch(94% 0.008 75);
-  --ink-2: oklch(84% 0.010 75);
-  --ink-3: oklch(72% 0.012 75);
-  --ink-4: oklch(60% 0.012 75);
-  --ink-5: oklch(48% 0.012 75);
+  --ink-2: oklch(86% 0.010 75);
+  --ink-3: oklch(76% 0.012 75);
+  --ink-4: oklch(66% 0.012 75);
+  --ink-5: oklch(56% 0.012 75);
 
   --accent: oklch(70% 0.14 32);
   --accent-2: oklch(78% 0.13 32);
@@ -351,6 +351,11 @@ img, svg { display: block; max-width: 100%; }
 .icon-btn:hover { border-color: var(--rule-2); color: var(--ink); background: var(--paper-2); }
 
 .mobile-only { display: none; }
+
+/* 桌面端：practice 顶栏隐藏，导航与搜索由侧栏承担，避免与门户顶栏叠成两行 */
+@media (min-width: 861px) {
+  .topbar { display: none; }
+}
 
 /* ---------- 排版 ---------- */
 .eyebrow {

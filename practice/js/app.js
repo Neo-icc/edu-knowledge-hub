@@ -219,7 +219,6 @@
           <div class="crumb">${crumb || '<span class="cur">概览</span>'}</div>
           <div class="topbar-actions">
             <button class="icon-btn" id="open-search-2" aria-label="搜索" title="搜索 (Ctrl K)">⌕</button>
-            <button class="icon-btn mobile-only" id="theme-toggle-2" aria-label="切换主题">◐</button>
           </div>
         </div>
         <main class="main-inner" id="main">${inner}</main>
