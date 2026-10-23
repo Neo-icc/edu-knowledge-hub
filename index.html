@@ -132,53 +132,54 @@
     letter-spacing: -0.02em;
     margin-bottom: 16px;
   }
-  .hero p { max-width: 58ch; margin: 0 auto; color: var(--ink3); font-size: 1.02rem; }
+  .hero-sub { max-width: 40ch; margin: 0 auto; color: var(--ink5); font-size: 0.88rem; }
 
-  .gate {
+  .ident-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
   }
-  .card {
+  .ident {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 34px 28px;
     background: var(--paper);
     border: 1px solid var(--rule);
     border-radius: 16px;
-    padding: 32px 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    transition: border-color .18s ease, box-shadow .18s ease;
+    text-align: left;
+    font-family: inherit;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   }
-  .card:hover { border-color: var(--rule2); box-shadow: var(--shadow); }
-  .tag {
-    align-self: flex-start;
-    font-size: 0.64rem;
-    letter-spacing: 0.1em;
+  .ident:hover, .ident:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .ident-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink5);
-    padding: 3px 10px;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
   }
-  .card h2 { font-family: var(--serif); font-weight: 700; font-size: 1.55rem; }
-  .card .lead { color: var(--ink3); font-size: 0.95rem; }
-  .card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .card li { color: var(--ink2); font-size: 0.86rem; padding-left: 18px; position: relative; }
-  .card li::before { content: "·"; position: absolute; left: 4px; color: var(--accent); font-weight: 700; }
-  .card .actions { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 10px 18px; min-height: 42px;
-    font-size: 0.9rem; font-weight: 500;
-    border-radius: 8px; border: 1px solid transparent;
-    transition: all .18s ease; white-space: nowrap;
+  .ident-name {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 2.2rem;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
   }
-  .btn.primary { background: var(--accent); color: var(--accent-ink); }
-  .btn.primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
-  .btn.ghost { border-color: var(--rule2); color: var(--ink2); background: transparent; }
-  .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn.study { border-color: var(--rule2); color: var(--derive); background: transparent; }
-  .btn.study:hover { border-color: var(--derive); }
+  .ident-sub { font-size: 0.82rem; line-height: 1.6; color: var(--ink3); }
+  .ident-go {
+    margin-top: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
 
   .note { text-align: center; color: var(--ink5); font-size: 0.82rem; margin-top: 28px; }
 
@@ -191,7 +192,9 @@
     .brand { font-size: 0.95rem; }
     .tab { padding: 6px 10px; font-size: 0.78rem; }
     .landing { padding: 32px 14px 56px; }
-    .card { padding: 24px 20px; }
+    .ident-grid { grid-template-columns: 1fr; }
+    .ident { padding: 26px 22px; }
+    .ident-name { font-size: 1.8rem; }
   }
 </style>
 </head>
@@ -212,43 +215,31 @@
       <div class="hero">
         <span class="eyebrow">One hub · Three identities</span>
         <h1>一份知识库，三种用法</h1>
-        <p>老师和家长走「情境优先」拿到可执行的做法；研究者与学者走「研究索引」做深度检索与导航。两边读的是同一套教育、心理与儿童发展知识。</p>
+        <p class="hero-sub">选择你的身份开始，随时可在顶部切换。</p>
       </div>
 
-      <div class="gate">
-        <div class="card">
-          <span class="tag">给家长与老师</span>
-          <h2>情境优先</h2>
-          <p class="lead">先给能直接用的做法、话术与转介边界，再往下看背后的机制与证据。</p>
-          <ul>
-            <li>按年龄 / 课堂情境快速分诊</li>
-            <li>「可以试 · 先别做 · 可以这样说」三段式</li>
-            <li>2–3 条情境合并成一张 A4，家长会带走</li>
-            <li>机制级关联、术语卡与可核验来源</li>
-          </ul>
-          <div class="actions">
-            <button class="btn primary" data-ident="parent">我是家长</button>
-            <button class="btn ghost" data-ident="teacher">我是老师</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <span class="tag">给研究者与学者</span>
-          <h2>研究索引</h2>
-          <p class="lead">作为索引与工具：按领域浏览 454 条深度条目，逐条看论断、共识与学术分歧。</p>
-          <ul>
-            <li>五大领域 · 454 条标准条目</li>
-            <li>每条含定义、论断、学界共识与学术分歧</li>
-            <li>证据综述与教育应用</li>
-            <li>学者简介与可视化图谱</li>
-          </ul>
-          <div class="actions">
-            <button class="btn study" data-ident="researcher">进入研究索引 →</button>
-          </div>
-        </div>
+      <div class="ident-grid">
+        <button class="ident" data-ident="parent">
+          <span class="ident-kicker">给家长</span>
+          <span class="ident-name">家长</span>
+          <span class="ident-sub">我的孩子怎么了<br>在家能做什么、说什么、何时找帮助</span>
+          <span class="ident-go">进入 →</span>
+        </button>
+        <button class="ident" data-ident="teacher">
+          <span class="ident-kicker">给老师</span>
+          <span class="ident-name">老师</span>
+          <span class="ident-sub">课堂上怎么办<br>课堂动作、5 分钟活动、转介建议</span>
+          <span class="ident-go">进入 →</span>
+        </button>
+        <button class="ident" data-ident="researcher">
+          <span class="ident-kicker">给研究者 · 学者</span>
+          <span class="ident-name">研究者</span>
+          <span class="ident-sub">检索 · 引用 · 数据<br>五大领域 454 条深度条目</span>
+          <span class="ident-go">进入 →</span>
+        </button>
       </div>
 
-      <p class="note">任何时候可通过顶部切换身份，或点击左上角返回入口。身份不锁定，内容不复制。</p>
+      <p class="note">身份不锁定，内容不复制。点击左上角品牌可随时返回此页。</p>
     </section>
 
     <div class="frame-wrap" id="frameWrap" hidden>
