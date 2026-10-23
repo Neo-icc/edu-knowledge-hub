@@ -12,6 +12,7 @@
     audience: "educator",
     scAge: "",
     scAudience: "",
+    scConcern: "",
     triage: { age: "", concern: "", duration: "" },
     sheetPick: [],
     sheetInit: false,
@@ -113,6 +114,7 @@
     const qs = [];
     if (state.scAge) qs.push("age=" + encodeURIComponent(state.scAge));
     if (state.scAudience && state.scAudience !== "all") qs.push("aud=" + encodeURIComponent(state.scAudience));
+    if (state.scConcern) qs.push("concern=" + encodeURIComponent(state.scConcern));
     return "#/scenarios" + (qs.length ? "?" + qs.join("&") : "");
   }
 
@@ -138,24 +140,20 @@
       ];
     }
     return [
-      { g: "从这里开始", items: [
-        ["#/start", "快速分诊", "start"],
+      { g: "场景主线", items: [
         ["#/scenarios", "场景库", "scenarios"],
-        ["#/", "概览", "overview"],
-        ["#/entries", "理论条目", "entries"],
-        ["#/glossary", "术语索引", "glossary"],
+        ["#/entries", "浏览条目", "entries"],
       ]},
-      { g: "探索", items: [
-        ["#/timeline", "观点时间轴", "timeline"],
-        ["#/thinkers", "人物索引", "thinkers"],
-        ["#/network", "关联网络", "network"],
-        ["#/learning-path", "阅读路径", "learning-path"],
-      ]},
-      { g: "工具", items: [
+      { g: "深入", items: [
+        ["#/timeline", "按时间 · 时间轴", "timeline"],
+        ["#/network", "按关联 · 网络", "network"],
+        ["#/path", "按关联 · 路径", "path"],
         ["#/compare", "理论对比", "compare"],
-        ["#/path", "关联路径", "path"],
-        ["#/integrity", "数据自检", "integrity"],
+        ["#/learning-path", "阅读路径", "learning-path"],
+        ["#/integrity", "按证据 · 数据自检", "integrity"],
         ["#/methods", "方法与边界", "methods"],
+        ["#/glossary", "术语索引", "glossary"],
+        ["#/thinkers", "人物索引", "thinkers"],
       ]},
     ];
   }
@@ -450,295 +448,6 @@
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  /* ---------------- 概览 ---------------- */
-  function viewOverview() {
-    if (!state.audience) return viewLanding();
-    if (state.audience === "researcher") return viewResearch();
-    const st = S.stats;
-    const metrics = [
-      [st.entries, "详解条目", ""],
-      [st.terms, "术语卡", ""],
-      [st.links, "关联", ""],
-      [st.thinkers, "人物", ""],
-      [st.byType.agreement, "共识关联", "agree"],
-      [st.byType.disagreement, "分歧对立", "disagree"],
-      [st.byType.derivative, "衍生发展", "derive"],
-      [st.activeBranches + "/" + st.branches, "覆盖分支", ""],
-    ].map(([n, l, c]) => `<div class="metric"><span class="metric-num ${c}">${n}</span><span class="metric-label">${l}</span></div>`).join("");
-
-    const maxDomain = Math.max.apply(null, S.domains.map((d) => countIn((e) => e.domain === d.id)));
-    const domains = S.domains.map((d) => {
-      const n = countIn((e) => e.domain === d.id);
-      const branches = d.branches.filter((b) => (S.entriesOfBranch[b.id] || []).length).length;
-      const pct = Math.round((n / maxDomain) * 100);
-      return `<a class="domain-card" href="#/entries?domain=${d.id}" style="--dc:${d.color}">
-        <div class="dc-top"><span class="dc-k">${String(S.domains.indexOf(d) + 1).padStart(2, "0")}</span><span class="dc-name">${esc(d.name)}</span></div>
-        <span class="dc-en">${esc(d.en)}</span>
-        <p class="dc-desc">${esc(d.desc)}</p>
-        <div class="dc-foot">
-          <span>${n} 条目</span><span>·</span><span>${branches}/${d.branches.length} 分支</span>
-          <span class="bar"><i style="width:${pct}%"></i></span>
-        </div>
-      </a>`;
-    }).join("");
-
-    const hubs = topByDegree(6);
-    const hubHTML = hubs.map((e, i) => `
-      <div class="entry-row" data-go="#/entry/${e.id}">
-        <span class="er-id">${String(i + 1).padStart(2, "0")}</span>
-        <div>
-          <div class="er-name">${esc(e.name)}</div>
-          <span class="er-en">${esc(e.en)}</span>
-          <span class="er-tag">${esc(e.tagline)}</span>
-        </div>
-        <div class="er-side">
-          <span class="er-meta">${S.degree(e.id)} 条关联</span>
-          <span class="er-branch" style="${branchStyle(e.branch)}">${esc(branchOf(e.branch).name)}</span>
-        </div>
-      </div>`).join("");
-
-    /* 年代分布：以 20 年为一格 */
-    const buckets = [];
-    const startD = 1880;
-    for (let d = startD; d <= 2020; d += 20) buckets.push({ d, n: 0 });
-    S.entries.forEach((e) => {
-      if (e.year < startD) buckets[0].n += 1; else {
-        const idx = Math.floor((e.year - startD) / 20);
-        if (buckets[idx]) buckets[idx].n += 1;
-        else buckets[buckets.length - 1].n += 1;
-      }
-    });
-    const maxB = Math.max.apply(null, buckets.map((b) => b.n)) || 1;
-    const eraBars = buckets.map((b) => {
-      const h = Math.max(3, Math.round((b.n / maxB) * 62));
-      const showLabel = (b.d - startD) % 40 === 0;
-      return `<div class="era-col" data-tip="${b.d}–${b.d + 19} · ${b.n} 条">
-        <div class="era-bar" style="height:${h}px"></div>
-        ${showLabel ? `<span class="era-x">${b.d}</span>` : ""}
-      </div>`;
-    }).join("");
-
-    /* 关联构成 */
-    const t = S.stats.byType;
-    const total = t.agreement + t.disagreement + t.derivative || 1;
-    const mixBar = `<div class="mix-bar">
-      <i style="width:${(t.agreement / total) * 100}%;background:var(--agree)"></i>
-      <i style="width:${(t.disagreement / total) * 100}%;background:var(--disagree)"></i>
-      <i style="width:${(t.derivative / total) * 100}%;background:var(--derive)"></i>
-    </div>
-    <div class="mix-legend">
-      <div class="mix-item"><span class="sw" style="background:var(--agree)"></span>共识关联<span class="v">${t.agreement}</span></div>
-      <div class="mix-item"><span class="sw" style="background:var(--disagree)"></span>分歧对立<span class="v">${t.disagreement}</span></div>
-      <div class="mix-item"><span class="sw" style="background:var(--derive)"></span>衍生发展<span class="v">${t.derivative}</span></div>
-    </div>`;
-
-    const aud = state.audience === "educator" ? "" : state.audience;
-    const heroCopy = { eb: "家长与老师 · 教育者", h1: "孩子这样<br/>我该怎么办", lead: `从婴幼儿到高中，按 0–3、3–6、小学、初中、高中 五个学段与课堂情境组织。每个情境都写清：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及什么时候该找专业帮助；课堂活动与一页纸都可直接带走。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/entries", "浏览条目", "ghost"]] };
-
-    const ageOrder = ["6-12", "12-15", "15-18", "0-3", "3-6", "all"];
-    const scStrip = ageOrder
-      .map((a) => S.scenarios.find((s) => (!aud || s.audience.includes(aud)) && s.age === a))
-      .filter(Boolean)
-      .slice(0, 4)
-      .map((s) => `<a class="sc-mini" href="#/scenarios?open=${s.id}">
-        <span class="sc-mini-age">${esc(AGE_NAME[s.age] || s.age)}</span>
-        <span class="sc-mini-title">${esc(s.title)}</span>
-        <span class="sc-mini-go">→</span>
-      </a>`).join("");
-
-    return `
-    <section class="hero">
-      <div>
-        <span class="eyebrow">${esc(heroCopy.eb)}</span>
-        <h1>${heroCopy.h1}</h1>
-        <p class="hero-lead">${esc(heroCopy.lead)}</p>
-        <div class="hero-actions">
-          ${heroCopy.cta.map(([href, label, cls]) => `<a class="btn ${cls}" href="${href}">${label}</a>`).join("")}
-        </div>
-      </div>
-      <div class="metric-grid">${metrics}</div>
-    </section>
-
-    <section class="sc-strip">
-      <div class="sec-head" style="margin-bottom:0.7rem">
-        <span class="sec-k">Scenarios · 大家最常遇到</span>
-        <a class="sec-more" href="#/scenarios">全部 ${st.scenarios} 个情境 →</a>
-      </div>
-      <div class="sc-mini-grid">${scStrip}</div>
-    </section>
-
-    <section class="chart-row">
-      <div class="chart-block">
-        <div class="chart-head">
-          <span class="chart-title">年代分布 · 20 年一格</span>
-          <span class="chart-note">${st.entries} 条 · ${st.yearRange[0] < 0 ? "古代" : st.yearRange[0]}–${st.yearRange[1]}</span>
-        </div>
-        <div class="era-chart">${eraBars}</div>
-      </div>
-      <div class="chart-block">
-        <div class="chart-head">
-          <span class="chart-title">关联构成</span>
-          <span class="chart-note">${st.links} 条</span>
-        </div>
-        <div class="mix-chart">${mixBar}</div>
-      </div>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head">
-        <span class="sec-k">Areas · 内容领域</span>
-        <a class="sec-more" href="#/entries">全部条目 →</a>
-      </div>
-      <div class="domain-grid">${domains}</div>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head">
-        <span class="sec-k">Hubs · 关联枢纽</span>
-        <a class="sec-more" href="#/network">打开网络 →</a>
-      </div>
-      <div class="entry-list">${hubHTML}</div>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-k">Explore · 三条探索路径</span></div>
-      <div class="domain-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
-        <a class="domain-card" href="#/timeline" style="--dc:var(--accent)">
-          <div class="dc-top"><span class="dc-name">按时间</span></div>
-          <span class="dc-en">Timeline</span>
-          <p class="dc-desc">从 1885 到 2006，看理论如何接力、谁在反驳谁。</p>
-          <div class="dc-foot"><span>${S.stats.yearRange[0] < 0 ? "古代" : S.stats.yearRange[0]} — ${S.stats.yearRange[1]}</span></div>
-        </a>
-        <a class="domain-card" href="#/path" style="--dc:var(--derive)">
-          <div class="dc-top"><span class="dc-name">按关联</span></div>
-          <span class="dc-en">Path</span>
-          <p class="dc-desc">任意两个知识点之间的最短关联路径，最多五跳。</p>
-          <div class="dc-foot"><span>图算法 · BFS</span></div>
-        </a>
-        <a class="domain-card" href="#/integrity" style="--dc:var(--agree)">
-          <div class="dc-top"><span class="dc-name">按证据</span></div>
-          <span class="dc-en">Integrity</span>
-          <p class="dc-desc">全站计数、引用与孤立节点自检，数字处处一致。</p>
-          <div class="dc-foot"><span>${S.integrity().errors} 错误 · ${S.integrity().warnings} 提示</span></div>
-        </a>
-      </div>
-    </section>
-    ${footHTML()}`;
-  }
-
-  /* ---------------- 快速分诊 ---------------- */
-  function viewTriage() {
-    const tr = S.triage;
-    const t = state.triage;
-    const ageObj = (tr.ages || []).find((a) => a.id === t.age);
-    const concernObj = (tr.concerns || []).find((c) => c.id === t.concern);
-    const ready = !!(ageObj && concernObj);
-
-    let results = [];
-    let relaxed = false;
-    if (ready) {
-      const ids = concernObj.scenarios.slice();
-      const exact = ids.filter((id) => S.scenarioById[id] && S.scenarioById[id].age === t.age);
-      const generic = ids.filter((id) => S.scenarioById[id] && S.scenarioById[id].age === "all");
-      const other = ids.filter((id) => S.scenarioById[id] && S.scenarioById[id].age !== t.age && S.scenarioById[id].age !== "all");
-      results = exact.concat(generic);
-      if (!results.length) { results = other; relaxed = true; }
-      results = results.slice(0, 6).map((id) => S.scenarioById[id]);
-    }
-
-    const urgent = t.duration === "months" || t.duration === "impact";
-
-    /* 一页纸选择：默认选中最贴近的 3 条；改年龄或困扰时重新初始化 */
-    const resultIds = results.map((s) => s.id);
-    if (ready && !state.sheetInit) {
-      state.sheetInit = true;
-      state.sheetPick = resultIds.slice(0, 3);
-    }
-    state.sheetPick = state.sheetPick.filter((id) => resultIds.indexOf(id) > -1);
-    const picked = state.sheetPick.map((id) => S.scenarioById[id]).filter(Boolean);
-    const canSheet = picked.length >= 2;
-    const sheetHref = `#/handout?ids=${picked.map((s) => s.id).join(",")}&age=${encodeURIComponent(t.age)}&concern=${encodeURIComponent(t.concern)}`;
-
-    const ageOpts = (tr.ages || []).map((a) => `<button class="triage-opt ${t.age === a.id ? "on" : ""}" data-tr="age" data-v="${a.id}">
-      <b>${esc(a.name)}</b><small>${esc(a.hint)}</small></button>`).join("");
-
-    const concernOpts = (tr.concerns || []).map((c) => `<button class="triage-opt ${t.concern === c.id ? "on" : ""}" data-tr="concern" data-v="${c.id}">
-      <b>${esc(c.name)}</b><small>${esc(c.hint)}</small></button>`).join("");
-
-    const durOpts = (tr.durations || []).map((d) => `<button class="chip ${t.duration === d.id ? "on" : ""}" data-tr="duration" data-v="${d.id}">${esc(d.name)}</button>`).join("");
-
-    return `
-    <div class="page-head">
-      <span class="eyebrow">Start · 快速分诊</span>
-      <h1 class="page-title">先回答三个问题</h1>
-      <p class="page-lead">不用先想清楚属于哪个理论。选年龄、选困扰、选持续时间，系统给出最接近的几条情境，每条都含可以试、先别做与转介边界。</p>
-    </div>
-
-    <div class="triage-wrap">
-      <section class="triage-q">
-        <div class="triage-q-head"><span class="triage-num">01</span><span class="triage-q-title">孩子多大</span>
-          ${ageObj ? `<button class="triage-edit" data-tr="reset" data-v="age">改</button>` : ""}</div>
-        <div class="triage-opts ages">${ageOpts}</div>
-      </section>
-
-      ${ageObj ? `<section class="triage-q">
-        <div class="triage-q-head"><span class="triage-num">02</span><span class="triage-q-title">现在最困扰你的是</span>
-          ${concernObj ? `<button class="triage-edit" data-tr="reset" data-v="concern">改</button>` : ""}</div>
-        <div class="triage-opts">${concernOpts}</div>
-      </section>` : ""}
-
-      ${ready ? `<section class="triage-q">
-        <div class="triage-q-head"><span class="triage-num">03</span><span class="triage-q-title">持续多久了</span>
-          <span class="triage-hint">用于提示紧急程度，不影响匹配</span></div>
-        <div class="graph-bar" style="margin-top:0">${durOpts}</div>
-      </section>` : ""}
-
-      ${ready ? `
-        <div class="triage-result">
-          <div class="triage-result-head">
-            <span class="sec-k">${esc(ageObj.name)} · ${esc(concernObj.name)}</span>
-            <span class="filter-meta">${results.length} 条情境</span>
-          </div>
-          ${urgent ? `<div class="sc-esc" style="margin-top:0.6rem"><span class="sc-k">先看这条</span>
-            持续时间较长或已影响吃饭、睡觉、上学时，优先排除健康与情绪因素，并考虑联系学校心理老师、儿科或儿童心理专业人员。下面的做法可以同时进行，但不要替代评估。</div>` : ""}
-          ${relaxed ? `<p class="graph-hint">该年龄段没有直接对应的情境，以下按「同类困扰」跨年龄推荐。</p>` : ""}
-          ${results.length >= 2 ? `<div class="pick-bar no-print">
-            <div class="pick-head">
-              <span class="sec-k">带走哪几条</span>
-              <span class="filter-meta">已选 ${picked.length} / 3 · 至少 2 条</span>
-            </div>
-            <div class="pick-chips">
-              ${results.map((s) => {
-                const idx = state.sheetPick.indexOf(s.id);
-                return `<button class="chip pick ${idx > -1 ? "on" : ""}" data-pick="${s.id}" aria-pressed="${idx > -1 ? "true" : "false"}">
-                  ${idx > -1 ? `<b>${idx + 1}</b>` : ""}${esc(s.title)}</button>`;
-              }).join("")}
-            </div>
-            <div class="pick-actions">
-              <span class="graph-hint">合并成一张 A4，家长会、家访或面谈时一次带走。</span>
-              ${canSheet
-                ? `<a class="btn primary sm" href="${sheetHref}">生成一页纸（A4）→</a>`
-                : `<span class="btn primary sm disabled" aria-disabled="true">生成一页纸（A4）</span>`}
-            </div>
-          </div>` : results.length === 1 ? `<div class="pick-bar no-print">
-            <p class="graph-hint">这一项当前只匹配到 1 条情境，无法合并；可以直接打印单条。</p>
-            <div class="pick-actions">
-              <a class="btn primary sm" href="#/scenario/${results[0].id}">打印这一条（A4）→</a>
-            </div>
-          </div>` : `<div class="pick-bar no-print"><p class="graph-hint">该困扰暂无可推荐的情境，换一个类别试试。</p></div>`}
-          <div class="sc-list" style="margin-top:0.8rem">
-            ${results.map((s, i) => scenarioCard(s, i < 2, state.sheetPick.indexOf(s.id) + 1)).join("")}
-          </div>
-          <div class="triage-actions">
-            <a class="btn ghost sm" href="#/scenarios?age=${encodeURIComponent(t.age)}">看该年龄全部情境 →</a>
-            <button class="btn ghost sm" data-tr="reset" data-v="all">重新选择</button>
-          </div>
-        </div>` : `<div class="triage-actions"><span class="graph-hint">选完前两项即可看到结果。</span></div>`}
-
-      <p class="triage-note"><b>一个判断说明</b>　分诊的 11 个类别和映射是按「家长 / 老师会怎么描述问题」做的编辑判断，不是研究结论。有些情境会同时出现在两类里（如「作业拖拉」既在注意力也在学习），这是有意的——同一个现象从不同入口都该能被找到。</p>
-    </div>
-    ${footHTML()}`;
-  }
 
   /* ---------------- 场景库 ---------------- */
   const AGES = [
@@ -772,9 +481,9 @@
     const entries = (s.links || []).map((id) => S.byId[id]).filter(Boolean);
     return `<details class="sc-card" ${open ? "open" : ""}>
       <summary>
+        <button class="chip pick ${pickIndex ? "on" : ""}" data-pick="${s.id}" aria-pressed="${pickIndex ? "true" : "false"}" title="${pickIndex ? "从一页纸移除" : "加入一页纸"}">${pickIndex ? "✓ 已选" : "＋ 一页纸"}</button>
         <span class="sc-title">${esc(s.title)}</span>
         <span class="sc-tags">
-          ${pickIndex ? `<span class="badge pick-on">已选 ${pickIndex}</span>` : ""}
           <span class="badge">${esc(AGE_NAME[s.age] || s.age)}</span>
           ${audTags}
           ${S.activities[s.id] ? '<span class="badge derive">含课堂活动</span>' : ""}
@@ -809,29 +518,55 @@
   function viewScenarios(query) {
     const openId = (query && query.open) || "";
     const audFilter = state.scAudience || "all";
+
+    const concernById = {};
+    S.triage.concerns.forEach((c) => { concernById[c.id] = c.scenarios || []; });
+
     const list = S.scenarios.filter((s) =>
       (audFilter === "all" || s.audience.includes(audFilter)) &&
-      (!state.scAge || s.age === state.scAge || s.age === "all")
+      (!state.scAge || s.age === state.scAge || s.age === "all") &&
+      (!state.scConcern || (concernById[state.scConcern] || []).indexOf(s.id) > -1)
     );
 
+    const concernChips = S.triage.concerns.map((c) =>
+      `<button class="chip ${state.scConcern === c.id ? "on" : ""}" data-sc-concern="${c.id}">${esc(c.name)}</button>`).join("");
     const ageChips = AGES.map((a) => `<button class="chip ${state.scAge === a.id ? "on" : ""}" data-sc-age="${a.id}">${esc(a.name)}</button>`).join("");
     const audChips = [["all", "全部"], ["teacher", "老师"], ["parent", "家长"]]
       .map(([v, n]) => `<button class="chip ${audFilter === v ? "on" : ""}" data-sc-aud="${v}">${n}</button>`).join("");
 
-    const intro = "按年龄和真实会遇到的情境组织。每条给出：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及何时该找专业帮助；含课堂活动的情境会额外标注。";
+    const picked = state.sheetPick.map((id) => S.scenarioById[id]).filter(Boolean);
+    const canSheet = picked.length >= 2;
+    const sheetHref = `#/handout?ids=${picked.map((s) => s.id).join(",")}`;
+
+    const intro = "按「困扰 + 年龄 + 身份」对号入座。每条都写清：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及什么时候该找专业帮助；含课堂活动的情境会额外标注。";
 
     return `
     <div class="page-head">
       <span class="eyebrow">Scenarios · 场景库</span>
       <h1 class="page-title">孩子这样，我该怎么办</h1>
       <p class="page-lead">${esc(intro)}</p>
-      <div class="graph-bar" style="margin-top:1rem">
+      <div class="filter-bar" style="margin-top:0.9rem">
+        <span class="sc-filter-label">困扰</span>${concernChips}
+      </div>
+      <div class="graph-bar" style="margin-top:0.5rem">
         <span class="sc-filter-label">身份</span>${audChips}
         <span class="sc-filter-label" style="margin-left:0.6rem">年龄</span>${ageChips}
         <span class="filter-meta">${list.length} 个情境</span>
       </div>
+      <div class="pick-bar no-print" style="margin-top:0.9rem">
+        <div class="pick-head">
+          <span class="sec-k">带走一页纸</span>
+          <span class="filter-meta">勾选 2–3 条情境，合并成一张 A4 · 已选 ${picked.length} / 3</span>
+        </div>
+        <div class="pick-actions">
+          ${canSheet
+            ? `<a class="btn primary sm" href="${sheetHref}">生成一页纸（A4）→</a>`
+            : `<span class="btn primary sm disabled" aria-disabled="true">生成一页纸（A4）</span>`}
+          ${picked.length ? `<button class="btn ghost sm" data-pick-clear>清空</button>` : ""}
+        </div>
+      </div>
     </div>
-    <div class="sc-list">${list.map((s, i) => scenarioCard(s, openId ? s.id === openId : (i === 0 && list.length <= 6))).join("") || '<div class="empty"><div class="em-t">该筛选下暂无情境</div>换一个年龄试试。</div>'}</div>
+    <div class="sc-list">${list.map((s, i) => scenarioCard(s, openId ? s.id === openId : (i === 0 && list.length <= 6), state.sheetPick.indexOf(s.id) + 1)).join("") || '<div class="empty"><div class="em-t">该筛选下暂无情境</div>换一个条件试试。</div>'}</div>
     <p class="graph-hint">每条情境都是对站内条目的编辑性综合，不构成诊断或个别化建议。涉及发展、精神健康与安全问题，请以专业人员评估为准。</p>
     ${footHTML()}`;
   }
@@ -935,7 +670,7 @@
 
     return `
     <div class="sheet-actions no-print">
-      <a class="back-link" href="#/start">← 返回分诊</a>
+      <a class="back-link" href="#/scenarios">← 返回场景库</a>
       <div class="sheet-actions-right">
         <span class="filter-meta">A4 · 单页 · 已合并 ${list.length} 条</span>
         <button class="btn primary sm" id="sheet-print">打印 / 存为 PDF</button>
@@ -2198,12 +1933,21 @@
     let inner = "";
     let crumb = "";
 
-    if (route === "") { inner = viewOverview(); crumb = '<span class="cur">' + (state.audience === "researcher" ? "研究索引" : state.audience ? "概览" : "开始") + '</span>'; }
-    else if (route === "start") { active = "start"; inner = viewTriage(); crumb = '<span class="cur">快速分诊</span>'; }
+    if (route === "") {
+      if (!state.audience) { inner = viewLanding(); crumb = '<span class="cur">开始</span>'; }
+      else if (state.audience === "researcher") { inner = viewResearch(); crumb = '<span class="cur">研究索引</span>'; }
+      else { active = "scenarios"; state.scAge = ""; state.scAudience = ""; state.scConcern = ""; inner = viewScenarios({}); crumb = '<span class="cur">场景库</span>'; }
+    }
+    else if (route === "start") {
+      active = "scenarios";
+      inner = `<div class="empty" style="padding:5rem 0"><div class="em-t">快速分诊已并入场景库</div><p style="margin-bottom:1.2rem">现在直接从场景库按「困扰类别 + 年龄 + 身份」对号入座。</p><a class="btn primary" href="#/scenarios">进入场景库 →</a></div>`;
+      crumb = '<span class="cur">场景库</span>';
+    }
     else if (route === "scenarios") {
       active = "scenarios";
       state.scAge = query.age || "";
       state.scAudience = query.aud || "";
+      state.scConcern = query.concern || "";
       inner = viewScenarios(query);
       crumb = '<span class="cur">场景库</span>';
     }
@@ -2214,9 +1958,9 @@
       crumb = `<a href="#/scenarios">场景库</a><span class="sep">/</span><span class="cur">${esc(s ? s.title : "未找到")}</span>`;
     }
     else if (route === "handout") {
-      active = "start";
+      active = "scenarios";
       inner = viewHandout(query);
-      crumb = `<a href="#/start">快速分诊</a><span class="sep">/</span><span class="cur">一页纸</span>`;
+      crumb = `<a href="#/scenarios">场景库</a><span class="sep">/</span><span class="cur">一页纸</span>`;
     }
     else if (route === "entries") {
       active = "entries";
@@ -2318,36 +2062,11 @@
       });
     });
 
-    /* 快速分诊 */
-    document.querySelectorAll("[data-tr]").forEach((el) => {
-      el.addEventListener("click", () => {
-        const k = el.dataset.tr;
-        const v = el.dataset.v;
-        if (k === "age") {
-          state.triage.age = state.triage.age === v ? "" : v;
-          if (!state.triage.age) state.triage.concern = "";
-          state.sheetPick = []; state.sheetInit = false;
-        } else if (k === "concern") {
-          state.triage.concern = state.triage.concern === v ? "" : v;
-          state.sheetPick = []; state.sheetInit = false;
-        } else if (k === "duration") {
-          state.triage.duration = state.triage.duration === v ? "" : v;
-        } else if (k === "reset") {
-          if (v === "concern") state.triage.concern = "";
-          else state.triage = { age: "", concern: "", duration: "" };
-          state.sheetPick = []; state.sheetInit = false;
-        }
-        render();
-        if (k === "concern" && state.triage.concern) {
-          const el = document.querySelector(".triage-result");
-          if (el) el.scrollIntoView({ block: "start", behavior: "smooth" });
-        }
-      });
-    });
-
     /* 一页纸：选择 2–3 条 */
     document.querySelectorAll("[data-pick]").forEach((el) => {
-      el.addEventListener("click", () => {
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const id = el.dataset.pick;
         const i = state.sheetPick.indexOf(id);
         if (i > -1) state.sheetPick.splice(i, 1);
@@ -2355,6 +2074,8 @@
         render();
       });
     });
+    const pickClear = document.querySelector("[data-pick-clear]");
+    if (pickClear) pickClear.addEventListener("click", () => { state.sheetPick = []; render(); });
 
     /* 身份切换 */
     document.querySelectorAll("[data-aud]").forEach((el) => {
@@ -2373,6 +2094,9 @@
     });
     document.querySelectorAll("[data-sc-aud]").forEach((el) => {
       el.addEventListener("click", () => { state.scAudience = el.dataset.scAud === "all" ? "" : el.dataset.scAud; go(scenarioURL()); });
+    });
+    document.querySelectorAll("[data-sc-concern]").forEach((el) => {
+      el.addEventListener("click", () => { state.scConcern = el.dataset.scConcern; go(scenarioURL()); });
     });
 
     /* 时间轴领域 */
