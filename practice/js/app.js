@@ -9,7 +9,7 @@
   /* ---------------- 状态 ---------------- */
   const state = {
     theme: document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light",
-    audience: localStorage.getItem("atlas-audience") || "",
+    audience: "educator",
     scAge: "",
     scAudience: "",
     triage: { age: "", concern: "", duration: "" },
@@ -164,12 +164,7 @@
           <span class="brand-title">教育与心智<br/>知识图谱</span>
           <span class="brand-en">Education · Mind · Brain Atlas</span>
         </a>
-        <div class="aud-switch" role="group" aria-label="选择使用身份">
-          <button class="aud-btn ${state.audience === "teacher" ? "on" : ""}" data-aud="teacher">我是老师</button>
-          <button class="aud-btn ${state.audience === "parent" ? "on" : ""}" data-aud="parent">我是家长</button>
-          <button class="aud-btn ${state.audience === "researcher" ? "on" : ""}" data-aud="researcher">研究者</button>
-        </div>
-        <div class="aud-hint">${state.audience === "teacher" ? "按课堂情境组织 · 含给教师的做法" : state.audience === "parent" ? "按年龄与家庭情境组织 · 含转介边界" : state.audience === "researcher" ? "索引与工具 · 检索 · 图谱 · 引用 · 数据" : "选择身份后，全站文案与建议会随之调整"}</div>
+        <div class="aud-hint">家长 · 老师 · 教育者视角　按年龄与情境组织，含课堂活动与转介边界</div>
       </div>
       <div class="sidebar-search">
         <button class="search-trigger" id="open-search" aria-label="打开全局搜索">
@@ -523,12 +518,8 @@
       <div class="mix-item"><span class="sw" style="background:var(--derive)"></span>衍生发展<span class="v">${t.derivative}</span></div>
     </div>`;
 
-    const aud = state.audience;
-    const heroCopy = aud === "teacher"
-      ? { eb: "教师工作台 · Teacher", h1: "把研究结论<br/>变成明天能用的课堂动作", lead: `${st.scenarios} 个课堂情境、${st.entries} 个知识点、${st.links} 条机制级关联。先按情境找到可执行的做法，再往下读机制与证据；每个建议都标明证据强度与转介边界。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/entries", "浏览条目", "ghost"]] }
-      : aud === "parent"
-        ? { eb: "家长手册 · Parent", h1: "先理解孩子<br/>再决定怎么做", lead: `按 0–3、3–6、6–12、12–18 四个年龄段组织。每个情境都写清：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及什么时候该找专业帮助。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/scenarios?age=all", "先看辟谣", "ghost"]] }
-        : { eb: A.meta.tagline, h1: "把教育与心智<br/>连成一张可查的地图", lead: `五个领域、${st.entries} 个知识点、${st.links} 条机制级关联。老师可以按课堂情境找做法，家长可以按年龄找解释；两种身份共享同一套机制与证据。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/entries", "浏览条目", "ghost"]] };
+    const aud = state.audience === "educator" ? "" : state.audience;
+    const heroCopy = { eb: "家长与老师 · 教育者", h1: "孩子这样<br/>我该怎么办", lead: `按 0–3、3–6、6–12、12–18 四个年龄段与课堂情境组织。每个情境都写清：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及什么时候该找专业帮助；课堂活动与一页纸都可直接带走。`, cta: [["#/start", "30 秒分诊", "primary"], ["#/scenarios", "场景库", "ghost"], ["#/entries", "浏览条目", "ghost"]] };
 
     const scStrip = S.scenarios
       .filter((s) => !aud || s.audience.includes(aud))
@@ -746,9 +737,9 @@
 
   function activityHTML(id) {
     const act = S.activities[id];
-    if (!act || state.audience === "parent") return "";
+    if (!act) return "";
     return `<div class="sc-activity">
-      <div class="sc-activity-head"><span>5 分钟课堂活动</span><b>${esc(act.name)}</b><em>${act.minutes} 分钟</em></div>
+      <div class="sc-activity-head"><span>5 分钟课堂活动</span><b>${esc(act.name)}</b><em>${act.minutes} 分钟 · 课堂用</em></div>
       <ol>${act.steps.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
       <div class="sc-activity-meta"><span>材料：${esc(act.materials)}</span><span>时机：${esc(act.when)}</span></div>
       <p class="sc-activity-note">${esc(act.note)}</p>
@@ -765,7 +756,7 @@
           ${pickIndex ? `<span class="badge pick-on">已选 ${pickIndex}</span>` : ""}
           <span class="badge">${esc(AGE_NAME[s.age] || s.age)}</span>
           ${audTags}
-          ${S.activities[s.id] && state.audience !== "parent" ? '<span class="badge derive">含课堂活动</span>' : ""}
+          ${S.activities[s.id] ? '<span class="badge derive">含课堂活动</span>' : ""}
           <span class="badge ${s.evidence === "established" ? "agree" : s.evidence === "contested" ? "disagree" : "derive"}">${esc((A.confidences[s.evidence] || {}).name || s.evidence)}</span>
         </span>
       </summary>
@@ -796,8 +787,7 @@
 
   function viewScenarios(query) {
     const openId = (query && query.open) || "";
-    const ident = state.audience;
-    const audFilter = state.scAudience || ident || "all";
+    const audFilter = state.scAudience || "all";
     const list = S.scenarios.filter((s) =>
       (audFilter === "all" || s.audience.includes(audFilter)) &&
       (!state.scAge || s.age === state.scAge || s.age === "all")
@@ -807,16 +797,12 @@
     const audChips = [["all", "全部"], ["teacher", "老师"], ["parent", "家长"]]
       .map(([v, n]) => `<button class="chip ${audFilter === v ? "on" : ""}" data-sc-aud="${v}">${n}</button>`).join("");
 
-    const intro = ident === "teacher"
-      ? "按课堂上真实会遇到的情况组织。每条给出：可能的机制、可以试的课堂动作、先别做的事、可以直接说的话，以及何时该转介。"
-      : ident === "parent"
-        ? "按孩子的年龄和家里真实会遇到的情况组织。每条给出：可能是怎么回事、可以试的做法、先别做的事、可以直接说的话，以及什么时候该找专业帮助。"
-        : "这是给老师和家长的情境库。选一个孩子年龄，或直接找到与你此刻最接近的那一条。";
+    const intro = "按年龄和真实会遇到的情境组织。每条给出：可能是怎么回事、可以试什么、先别做什么、可以怎么说，以及何时该找专业帮助；含课堂活动的情境会额外标注。";
 
     return `
     <div class="page-head">
       <span class="eyebrow">Scenarios · 场景库</span>
-      <h1 class="page-title">${ident === "teacher" ? "课堂上，先做什么" : ident === "parent" ? "孩子这样，我能做什么" : "从一个具体情境开始"}</h1>
+      <h1 class="page-title">孩子这样，我该怎么办</h1>
       <p class="page-lead">${esc(intro)}</p>
       <div class="graph-bar" style="margin-top:1rem">
         <span class="sc-filter-label">身份</span>${audChips}
@@ -835,7 +821,7 @@
     if (!s) return notFound("未找到该情境");
     const entries = (s.links || []).map((x) => S.byId[x]).filter(Boolean);
     const act = S.activities[s.id];
-    const showAct = act && state.audience !== "parent";
+    const showAct = !!act;
     const today = new Date();
     const dateStr = today.getFullYear() + " 年 " + (today.getMonth() + 1) + " 月 " + today.getDate() + " 日";
 
@@ -919,7 +905,7 @@
     const today = new Date();
     const dateStr = today.getFullYear() + " 年 " + (today.getMonth() + 1) + " 月 " + today.getDate() + " 日";
     const countName = ["", "一件事", "两件事", "三件事"][list.length];
-    const audLabel = state.audience === "teacher" ? "给老师" : state.audience === "parent" ? "给家长" : "老师 / 家长";
+    const audLabel = "家长 / 老师";
 
     /* 依据：合并去重后的机制条目 */
     const refMap = {};
@@ -1139,7 +1125,7 @@
       <div class="td">${esc(t.d)}</div>
     </div>`).join("");
 
-    const appLabel = state.audience === "teacher" ? "课堂可以试" : state.audience === "parent" ? "在家可以试" : "教育应用";
+    const appLabel = "可以试";
     const scForEntry = S.scenariosOfEntry[e.id] || [];
     const doiN = e.evidence.filter((x) => x.doi).length;
 

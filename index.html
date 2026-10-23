@@ -136,8 +136,10 @@
 
   .ident-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
+    max-width: 720px;
+    margin: 0 auto;
   }
   .ident {
     display: flex;
@@ -203,8 +205,7 @@
     <a class="brand" href="#" data-home><span class="dot"></span><span>教育与心智 · 知识图谱</span></a>
     <div class="spacer"></div>
     <nav class="tabs" id="tabs">
-      <button class="tab" data-ident="parent">家长</button>
-      <button class="tab" data-ident="teacher">老师</button>
+      <button class="tab" data-ident="educator">家长 · 老师</button>
       <button class="tab" data-ident="researcher">研究者</button>
     </nav>
     <button class="theme-btn" id="theme" aria-label="切换主题">◐</button>
@@ -213,22 +214,16 @@
   <main id="main">
     <section class="landing" id="landing">
       <div class="hero">
-        <span class="eyebrow">One hub · Three identities</span>
-        <h1>一份知识库，三种用法</h1>
-        <p class="hero-sub">选择你的身份开始，随时可在顶部切换。</p>
+        <span class="eyebrow">One hub · Two paths</span>
+        <h1>一份知识库，两种用法</h1>
+        <p class="hero-sub">选择入口开始，随时可在顶部切换。</p>
       </div>
 
       <div class="ident-grid">
-        <button class="ident" data-ident="parent">
-          <span class="ident-kicker">给家长</span>
-          <span class="ident-name">家长</span>
-          <span class="ident-sub">我的孩子怎么了<br>在家能做什么、说什么、何时找帮助</span>
-          <span class="ident-go">进入 →</span>
-        </button>
-        <button class="ident" data-ident="teacher">
-          <span class="ident-kicker">给老师</span>
-          <span class="ident-name">老师</span>
-          <span class="ident-sub">课堂上怎么办<br>课堂动作、5 分钟活动、转介建议</span>
+        <button class="ident" data-ident="educator">
+          <span class="ident-kicker">给家长与老师</span>
+          <span class="ident-name">家长 · 老师</span>
+          <span class="ident-sub">孩子这样，我该怎么办<br>按年龄分诊 · 课堂活动 · 一页纸带走</span>
           <span class="ident-go">进入 →</span>
         </button>
         <button class="ident" data-ident="researcher">
@@ -253,10 +248,11 @@
   var frameWrap = document.getElementById("frameWrap");
   var landing = document.getElementById("landing");
   var tabs = document.getElementById("tabs");
-  var IDENTS = ["parent", "teacher", "researcher"];
+  var IDENTS = ["educator", "researcher"];
 
   function identFromHash() {
     var h = location.hash.replace(/^#\/?/, "").trim();
+    if (h === "parent" || h === "teacher") h = "educator"; // 向后兼容旧深链接
     return IDENTS.indexOf(h) > -1 ? h : "landing";
   }
 
@@ -264,7 +260,7 @@
     var next = identFromHash();
     // 传给 practice 子应用的身份（edu-psych 无身份概念，忽略）
     try {
-      if (next === "parent" || next === "teacher") localStorage.setItem("atlas-audience", next);
+      if (next === "educator") localStorage.setItem("atlas-audience", "educator");
     } catch (e) {}
 
     var isLanding = next === "landing";
