@@ -583,7 +583,10 @@
     return `
     <div class="sheet-actions no-print">
       <a class="back-link" href="#/scenarios?open=${s.id}">← 返回场景库</a>
-      <button class="btn primary sm" id="sheet-print">打印 / 存为 PDF</button>
+      <div class="sheet-actions-right">
+        <button class="btn ghost sm" id="sheet-print">打印</button>
+        <button class="btn primary sm" id="sheet-image">存为图片</button>
+      </div>
     </div>
     <article class="sheet-paper">
       <header class="sheet-head">
@@ -672,7 +675,8 @@
       <a class="back-link" href="#/scenarios">← 返回场景库</a>
       <div class="sheet-actions-right">
         <span class="filter-meta">A4 · 单页 · 已合并 ${list.length} 条</span>
-        <button class="btn primary sm" id="sheet-print">打印 / 存为 PDF</button>
+        <button class="btn ghost sm" id="sheet-print">打印</button>
+        <button class="btn primary sm" id="sheet-image">存为图片</button>
       </div>
     </div>
     <article class="sheet-paper handout">
@@ -716,6 +720,173 @@
         <p>教育与心智知识图谱 v${esc(A.meta.version)} · ${esc(dateStr)} · 共 ${list.length} 条情境 · 单页</p>
       </footer>
     </article>`;
+  }
+
+  /* ---------------- 图片导出（Canvas 绘制 A4 PNG） ---------------- */
+  function wrapText(ctx, text, maxWidth) {
+    const lines = [];
+    let line = "";
+    for (const ch of String(text == null ? "" : text)) {
+      if (ch === "\n") { if (line) lines.push(line); line = ""; continue; }
+      const test = line + ch;
+      if (line && ctx.measureText(test).width > maxWidth) { lines.push(line); line = ch; }
+      else line = test;
+    }
+    if (line) lines.push(line);
+    return lines.length ? lines : [""];
+  }
+
+  function renderSheetImage(doc) {
+    const W = 800;
+    const pad = 56;
+    const contentW = W - pad * 2;
+    const sans = "'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif";
+    const serif = "Georgia,'Noto Serif SC','Songti SC',serif";
+    const COL = { ink: "#1c1a17", ink2: "#57534e", ink3: "#8a8580", accent: "#8a3d1f", rule: "#e5e0d8" };
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = 6000;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, canvas.height);
+
+    let y = pad;
+    const fill = (text, x, size, color, font, weight) => {
+      ctx.fillStyle = color;
+      ctx.font = (weight ? weight + " " : "") + size + "px " + font;
+      ctx.fillText(text, x, y);
+    };
+
+    // kicker
+    fill(doc.kicker, pad, 12, COL.ink3, sans);
+    y += 24;
+
+    // 标题
+    ctx.font = "bold 30px " + serif;
+    wrapText(ctx, doc.title, contentW).forEach((ln) => { fill(ln, pad, 30, COL.ink, serif, "bold"); y += 42; });
+    y += 6;
+
+    // 元信息
+    const metaText = (doc.meta || []).filter(Boolean).join("　·　");
+    ctx.font = "13px " + sans;
+    wrapText(ctx, metaText, contentW).forEach((ln) => { fill(ln, pad, 13, COL.ink2, sans); y += 24; });
+    y += 8;
+
+    // 分隔线
+    ctx.strokeStyle = COL.rule;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+    y += 26;
+
+    (doc.sections || []).forEach((sec) => {
+      fill(sec.h, pad, 16, COL.accent, sans, "bold");
+      y += 28;
+      if (sec.p) {
+        ctx.font = "14px " + sans;
+        wrapText(ctx, sec.p, contentW).forEach((ln) => { fill(ln, pad, 14, COL.ink, sans); y += 26; });
+      }
+      if (sec.list) {
+        ctx.font = "14px " + sans;
+        sec.list.forEach((item, i) => {
+          const prefix = sec.ordered ? (i + 1) + ". " : "· ";
+          const restW = contentW - Math.round(ctx.measureText(prefix).width) - 6;
+          wrapText(ctx, item, restW).forEach((ln, j) => {
+            fill((j === 0 ? prefix : "　　") + ln, pad, 14, COL.ink, sans);
+            y += 26;
+          });
+        });
+      }
+      if (sec.refs) {
+        ctx.font = "13px " + sans;
+        sec.refs.forEach((r) => {
+          wrapText(ctx, r, contentW - 18).forEach((ln) => { fill(ln, pad + 16, 13, COL.ink2, sans); y += 24; });
+        });
+      }
+      y += 12;
+    });
+
+    // 分隔线 + 页脚
+    ctx.strokeStyle = COL.rule;
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+    y += 22;
+    ctx.font = "11px " + sans;
+    (doc.foot || []).forEach((f) => {
+      wrapText(ctx, f, contentW).forEach((ln) => { fill(ln, pad, 11, COL.ink3, sans); y += 20; });
+    });
+    y += pad;
+
+    const out = document.createElement("canvas");
+    out.width = W;
+    out.height = Math.ceil(y);
+    out.getContext("2d").drawImage(canvas, 0, 0, W, out.height, 0, 0, W, out.height);
+    return out;
+  }
+
+  function downloadSheetImage() {
+    const { parts, query } = parseHash();
+    const route = parts[0] || "";
+    const today = new Date();
+    const dateStr = today.getFullYear() + " 年 " + (today.getMonth() + 1) + " 月 " + today.getDate() + " 日";
+    let doc = null;
+
+    if (route === "scenario") {
+      const s = S.scenarioById[parts[1]];
+      if (!s) return;
+      const entries = (s.links || []).map((id) => S.byId[id]).filter(Boolean);
+      const act = S.activities[s.id];
+      doc = {
+        kicker: "教育与心智知识图谱 · 情境卡",
+        title: s.title,
+        meta: [AGE_NAME[s.age] || s.age, s.audience.map((a) => (a === "teacher" ? "给老师" : "给家长")).join(" / "), "证据：" + ((A.confidences[s.evidence] || {}).name || s.evidence), s.id],
+        sections: [
+          { h: "你看到的现象", p: s.signal },
+          { h: "可能不是你以为的那样", p: s.read },
+          { h: "可以试", list: s.do, ordered: true },
+          { h: "先别做", list: s.dont },
+          { h: "可以这样说", list: s.say },
+        ].concat(
+          act ? [{ h: "5 分钟课堂活动 · " + act.name + "（" + act.minutes + " 分钟）", p: "材料：" + act.materials + "　时机：" + act.when + "　" + act.note, list: act.steps, ordered: true }] : [],
+          (s.escalate && s.escalate !== "—") ? [{ h: "何时找专业帮助", p: s.escalate }] : [],
+          entries.length ? [{ h: "依据（可查证的机制条目）", refs: entries.map((e) => e.name + "　" + S.thinkerName(e.thinker) + "，" + fmtYear(e.year) + "　" + e.id) }] : []
+        ),
+        foot: ["本卡是对站内知识条目的编辑性综合，不构成诊断，也不能替代个别化评估。涉及发展与精神健康问题，请以专业人员意见为准。", "教育与心智知识图谱 v" + A.meta.version + " · " + dateStr + " · " + s.id],
+        filename: "情境卡-" + s.id + ".png",
+      };
+    } else if (route === "handout") {
+      const rawIds = String(query.ids || "").split(",").map((x) => x.trim()).filter(Boolean);
+      const ids = rawIds.filter((id, i) => rawIds.indexOf(id) === i).slice(0, 3);
+      const list = ids.map((id) => S.scenarioById[id]).filter(Boolean);
+      if (!list.length) return;
+      const countName = ["", "一件事", "两件事", "三件事"][list.length];
+      const concern = (S.triage.concerns || []).find((c) => c.id === (query.concern || ""));
+      doc = {
+        kicker: "教育与心智知识图谱 · 家校沟通一页纸",
+        title: "带回去的" + countName,
+        meta: [query.age ? (AGE_NAME[query.age] || query.age) : "", concern ? "困扰：" + concern.name : "", "家长 / 老师", dateStr],
+        sections: list.map((s, i) => ({
+          h: String(i + 1).padStart(2, "0") + "  " + s.title + "　证据：" + ((A.confidences[s.evidence] || {}).name || s.evidence),
+          p: "你可能会看到　" + s.signal + "\n可能不是你以为的那样　" + s.read,
+          list: ["可以试：" + s.do.join("；"), "先别做：" + s.dont.join("；"), "可以这样说：" + s.say.join("；")].concat((s.escalate && s.escalate !== "—") ? ["何时找专业帮助：" + s.escalate] : []),
+        })),
+        foot: ["本页是对站内知识条目的编辑性综合，不构成诊断，也不能替代个别化评估。涉及发展与精神健康问题，请以专业人员意见为准。", "教育与心智知识图谱 v" + A.meta.version + " · " + dateStr + " · 共 " + list.length + " 条情境 · 单页"],
+        filename: "一页纸-" + dateStr.replace(/\s/g, "") + ".png",
+      };
+    }
+
+    if (!doc) return;
+    const canvas = renderSheetImage(doc);
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }, "image/png");
   }
 
   /* ---------------- 条目列表 ---------------- */
@@ -2196,9 +2367,11 @@
       go("#/learning-path" + (v ? "?domain=" + v : ""));
     });
 
-    /* 情境卡打印 */
+    /* 情境卡打印 / 存图 */
     const sheetPrint = document.getElementById("sheet-print");
     if (sheetPrint) sheetPrint.addEventListener("click", () => window.print());
+    const sheetImage = document.getElementById("sheet-image");
+    if (sheetImage) sheetImage.addEventListener("click", downloadSheetImage);
   }
 
   function closeNav() {
