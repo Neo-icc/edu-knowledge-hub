@@ -146,7 +146,7 @@
           <span class="brand-title">教育与心智<br/>知识图谱</span>
           <span class="brand-en">Education · Mind · Brain Atlas</span>
         </a>
-        <div class="aud-hint">家长 · 老师 · 教育者视角　按年龄与情境组织，含课堂活动与转介边界</div>
+        <div class="aud-hint">家长/老师 · 教育者视角　按年龄与情境组织，含课堂活动与转介边界</div>
       </div>
       <div class="sidebar-search">
         <button class="search-trigger" id="open-search" aria-label="打开全局搜索">
@@ -419,7 +419,7 @@
     const today = new Date();
     const dateStr = today.getFullYear() + " 年 " + (today.getMonth() + 1) + " 月 " + today.getDate() + " 日";
     const countName = ["", "一件事", "两件事", "三件事"][list.length];
-    const audLabel = "家长 / 老师";
+    const audLabel = "家长/老师";
 
     /* 依据：合并去重后的机制条目 */
     const refMap = {};
@@ -516,12 +516,12 @@
 
     // kicker
     fill(doc.kicker, pad, 12, COL.ink3, sans);
-    y += 24;
+    y += 40;
 
     // 标题
     ctx.font = "bold 30px " + serif;
     wrapText(ctx, doc.title, contentW).forEach((ln) => { fill(ln, pad, 30, COL.ink, serif, "bold"); y += 42; });
-    y += 6;
+    y += 10;
 
     // 元信息
     const metaText = (doc.meta || []).filter(Boolean).join("　·　");
@@ -619,7 +619,7 @@
       doc = {
         kicker: "教育与心智知识图谱 · 家校沟通一页纸",
         title: "带回去的" + countName,
-        meta: [query.age ? (AGE_NAME[query.age] || query.age) : "", concern ? "困扰：" + concern.name : "", "家长 / 老师", dateStr],
+        meta: [query.age ? (AGE_NAME[query.age] || query.age) : "", concern ? "困扰：" + concern.name : "", "家长/老师", dateStr],
         sections: list.map((s, i) => ({
           h: String(i + 1).padStart(2, "0") + "  " + s.title + "　证据：" + ((A.confidences[s.evidence] || {}).name || s.evidence),
           p: "你可能会看到　" + s.signal + "\n可能不是你以为的那样　" + s.read,

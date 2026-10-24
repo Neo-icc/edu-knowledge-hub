@@ -108,7 +108,7 @@ body {
   font-family: var(--sans);
   background: var(--paper);
   color: var(--ink);
-  font-size: 15.5px;
+  font-size: 16px;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -249,7 +249,7 @@ img, svg { display: block; max-width: 100%; }
   gap: var(--s2);
   padding: 0.42rem 0.6rem;
   border-radius: var(--r1);
-  font-size: 0.855rem;
+  font-size: 0.9rem;
   color: var(--ink-2);
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
