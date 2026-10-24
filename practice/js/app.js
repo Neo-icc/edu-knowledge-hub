@@ -11,7 +11,7 @@
     theme: document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light",
     scAge: "",
     scAudience: "",
-    scConcern: "",
+    scConcerns: [],
     sheetPick: [],
     navOpen: false,
     filter: { domain: "", branch: "", kind: "" },
@@ -103,7 +103,7 @@
     const qs = [];
     if (state.scAge) qs.push("age=" + encodeURIComponent(state.scAge));
     if (state.scAudience && state.scAudience !== "all") qs.push("aud=" + encodeURIComponent(state.scAudience));
-    if (state.scConcern) qs.push("concern=" + encodeURIComponent(state.scConcern));
+    if (state.scConcerns.length) qs.push("concern=" + encodeURIComponent(state.scConcerns.join(",")));
     return "#/scenarios" + (qs.length ? "?" + qs.join("&") : "");
   }
 
@@ -280,11 +280,12 @@
     const list = S.scenarios.filter((s) =>
       (audFilter === "all" || s.audience.includes(audFilter)) &&
       (!state.scAge || s.age === state.scAge || s.age === "all") &&
-      (!state.scConcern || (concernById[state.scConcern] || []).indexOf(s.id) > -1)
+      (state.scConcerns.length === 0 || state.scConcerns.some((c) => (concernById[c] || []).indexOf(s.id) > -1))
     );
 
-    const concernChips = S.triage.concerns.map((c) =>
-      `<button class="chip ${state.scConcern === c.id ? "on" : ""}" data-sc-concern="${c.id}">${esc(c.name)}</button>`).join("");
+    const concernChips = `<button class="chip ${state.scConcerns.length === 0 ? "on" : ""}" data-sc-concern="">全部</button>` +
+      S.triage.concerns.map((c) =>
+        `<button class="chip ${state.scConcerns.includes(c.id) ? "on" : ""}" data-sc-concern="${c.id}">${esc(c.name)}</button>`).join("");
     const ageChips = AGES.map((a) => `<button class="chip ${state.scAge === a.id ? "on" : ""}" data-sc-age="${a.id}">${esc(a.name)}</button>`).join("");
     const audChips = [["all", "全部"], ["teacher", "老师"], ["parent", "家长"]]
       .map(([v, n]) => `<button class="chip ${audFilter === v ? "on" : ""}" data-sc-aud="${v}">${n}</button>`).join("");
@@ -301,12 +302,12 @@
       <h1 class="page-title">孩子这样，我该怎么办</h1>
       <p class="page-lead">${esc(intro)}</p>
       <div class="filter-bar" style="margin-top:0.9rem">
-        <span class="sc-filter-label">困扰</span>${concernChips}
-      </div>
-      <div class="graph-bar" style="margin-top:0.5rem">
         <span class="sc-filter-label">身份</span>${audChips}
         <span class="sc-filter-label" style="margin-left:0.6rem">年龄</span>${ageChips}
         <span class="filter-meta">${list.length} 个情境</span>
+      </div>
+      <div class="filter-bar" style="margin-top:0.5rem">
+        <span class="sc-filter-label">困扰</span>${concernChips}
       </div>
       <div class="pick-bar no-print" style="margin-top:0.9rem">
         <div class="pick-head">
@@ -415,7 +416,8 @@
     if (!list.length) return notFound("没有可合并的情境");
 
     const ageId = query.age || "";
-    const concern = (S.triage.concerns || []).find((c) => c.id === (query.concern || ""));
+    const concernNames = String(query.concern || "").split(",").filter(Boolean)
+      .map((id) => (S.triage.concerns || []).find((c) => c.id === id)).filter(Boolean).map((c) => c.name);
     const today = new Date();
     const dateStr = today.getFullYear() + " 年 " + (today.getMonth() + 1) + " 月 " + today.getDate() + " 日";
     const countName = ["", "一件事", "两件事", "三件事"][list.length];
@@ -441,7 +443,7 @@
         <h1>带回去的${countName}</h1>
         <div class="sheet-meta">
           ${ageId ? `<span>${esc(AGE_NAME[ageId] || ageId)}</span>` : ""}
-          ${concern ? `<span>困扰：${esc(concern.name)}</span>` : ""}
+          ${concernNames.length ? `<span>困扰：${esc(concernNames.join(" / "))}</span>` : ""}
           <span>${esc(audLabel)}</span>
           <span>${esc(dateStr)}</span>
         </div>
@@ -615,11 +617,12 @@
       const list = ids.map((id) => S.scenarioById[id]).filter(Boolean);
       if (!list.length) return;
       const countName = ["", "一件事", "两件事", "三件事"][list.length];
-      const concern = (S.triage.concerns || []).find((c) => c.id === (query.concern || ""));
+      const concernNames = String(query.concern || "").split(",").filter(Boolean)
+        .map((id) => (S.triage.concerns || []).find((c) => c.id === id)).filter(Boolean).map((c) => c.name);
       doc = {
         kicker: "教育与心智知识图谱 · 家校沟通一页纸",
         title: "带回去的" + countName,
-        meta: [query.age ? (AGE_NAME[query.age] || query.age) : "", concern ? "困扰：" + concern.name : "", "家长或老师", dateStr],
+        meta: [query.age ? (AGE_NAME[query.age] || query.age) : "", concernNames.length ? "困扰：" + concernNames.join(" / ") : "", "家长或老师", dateStr],
         sections: list.map((s, i) => ({
           h: String(i + 1).padStart(2, "0") + "  " + s.title + "　证据：" + ((A.confidences[s.evidence] || {}).name || s.evidence),
           p: "你可能会看到　" + s.signal + "\n可能不是你以为的那样　" + s.read,
@@ -1860,7 +1863,7 @@
 
     if (route === "") {
       active = "scenarios";
-      state.scAge = ""; state.scAudience = ""; state.scConcern = "";
+      state.scAge = ""; state.scAudience = ""; state.scConcerns = [];
       inner = viewScenarios({});
       crumb = '<span class="cur">场景库</span>';
     }
@@ -1873,7 +1876,7 @@
       active = "scenarios";
       state.scAge = query.age || "";
       state.scAudience = query.aud || "";
-      state.scConcern = query.concern || "";
+      state.scConcerns = (query.concern || "").split(",").filter(Boolean);
       inner = viewScenarios(query);
       crumb = '<span class="cur">场景库</span>';
     }
@@ -2001,15 +2004,28 @@
     const pickClear = document.querySelector("[data-pick-clear]");
     if (pickClear) pickClear.addEventListener("click", () => { state.sheetPick = []; render(); });
 
-    /* 场景库筛选 */
+    /* 场景库筛选：单选再点取消，困扰多选再点取消 */
     document.querySelectorAll("[data-sc-age]").forEach((el) => {
-      el.addEventListener("click", () => { state.scAge = el.dataset.scAge; go(scenarioURL()); });
+      el.addEventListener("click", () => { state.scAge = state.scAge === el.dataset.scAge ? "" : el.dataset.scAge; go(scenarioURL()); });
     });
     document.querySelectorAll("[data-sc-aud]").forEach((el) => {
-      el.addEventListener("click", () => { state.scAudience = el.dataset.scAud === "all" ? "" : el.dataset.scAud; go(scenarioURL()); });
+      el.addEventListener("click", () => {
+        const v = el.dataset.scAud === "all" ? "" : el.dataset.scAud;
+        state.scAudience = state.scAudience === v ? "" : v;
+        go(scenarioURL());
+      });
     });
     document.querySelectorAll("[data-sc-concern]").forEach((el) => {
-      el.addEventListener("click", () => { state.scConcern = el.dataset.scConcern; go(scenarioURL()); });
+      el.addEventListener("click", () => {
+        const id = el.dataset.scConcern;
+        if (!id) { state.scConcerns = []; }
+        else {
+          const i = state.scConcerns.indexOf(id);
+          if (i > -1) state.scConcerns.splice(i, 1);
+          else state.scConcerns.push(id);
+        }
+        go(scenarioURL());
+      });
     });
 
     /* 时间轴领域 */
