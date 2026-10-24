@@ -30,7 +30,7 @@ ATLAS.triage = {
     { id: "sleep", name: "睡眠与屏幕", hint: "夜醒、哄睡、手机、熬夜",
       scenarios: ["S01", "S06", "S20", "S25", "S37", "S44"] },
     { id: "mood", name: "情绪低落与压力", hint: "持续低落、焦虑、压力、说丧气话",
-      scenarios: ["S18", "S30", "S41", "S43", "S45", "S47"] },
+      scenarios: ["S18", "S30", "S41", "S43", "S45", "S47", "S53", "S54", "S55"] },
     { id: "develop", name: "发育与自理", hint: "分离焦虑、不肯自己做、发育疑虑",
       scenarios: ["S02", "S03", "S07", "S10", "S52"] },
     { id: "myth", name: "担心被误导", hint: "关键期、左右脑、学习风格、报班",
