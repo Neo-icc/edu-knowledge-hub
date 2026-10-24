@@ -1810,15 +1810,21 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   list-style: none;
 }
 .sc-card > summary::-webkit-details-marker { display: none; }
-.sc-card > summary::after {
-  content: "＋";
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  color: var(--ink-5);
+.sc-toggle {
   margin-left: auto;
   order: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.66rem;
+  color: var(--ink-5);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
-.sc-card[open] > summary::after { content: "−"; }
+.sc-toggle-txt::before { content: "详情"; }
+.sc-card[open] .sc-toggle-txt::before { content: "收起"; }
+.sc-arrow::before { content: "▾"; }
+.sc-card[open] .sc-arrow::before { content: "▴"; }
 .sc-title {
   font-family: var(--serif);
   font-weight: 600;
@@ -2362,20 +2368,18 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   margin-bottom: var(--s2);
 }
 .pick-head .filter-meta { margin-left: 0; }
-.pick-chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
-.chip.pick { text-align: left; line-height: 1.35; }
-.chip.pick b {
+.pick-head .sec-k {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 16px; height: 16px;
-  margin-right: 0.15rem;
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--ink);
+  gap: 0.35rem;
   font-family: var(--mono);
-  font-size: 0.62rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-4);
 }
+.pick-head .sec-k .ico { flex-shrink: 0; }
+.chip.pick { display: inline-flex; align-items: center; gap: 0.3rem; text-align: left; line-height: 1.35; }
+.chip.pick .ico { flex-shrink: 0; }
 .pick-actions {
   display: flex;
   align-items: center;

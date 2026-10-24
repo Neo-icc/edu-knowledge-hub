@@ -219,6 +219,7 @@
     "6-12": "小学（6–12）", "12-15": "初中（12–15）", "15-18": "高中（15–18）",
     all: "通用",
   };
+  const PRINTER_ICO = '<svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
 
   function activityHTML(id) {
     const act = S.activities[id];
@@ -236,7 +237,7 @@
     const entries = (s.links || []).map((id) => S.byId[id]).filter(Boolean);
     return `<details class="sc-card" ${open ? "open" : ""}>
       <summary>
-        <button class="chip pick ${pickIndex ? "on" : ""}" data-pick="${s.id}" aria-pressed="${pickIndex ? "true" : "false"}" title="${pickIndex ? "从一页纸移除" : "加入一页纸"}">${pickIndex ? "✓ 已选" : "＋ 一页纸"}</button>
+        <button class="chip pick ${pickIndex ? "on" : ""}" data-pick="${s.id}" aria-pressed="${pickIndex ? "true" : "false"}" title="${pickIndex ? "从一页纸移除" : "加入一页纸"}">${PRINTER_ICO}${pickIndex ? "已选" : "一页纸"}</button>
         <span class="sc-title">${esc(s.title)}</span>
         <span class="sc-tags">
           <span class="badge">${esc(AGE_NAME[s.age] || s.age)}</span>
@@ -244,6 +245,7 @@
           ${S.activities[s.id] ? '<span class="badge derive">含课堂活动</span>' : ""}
           <span class="badge ${s.evidence === "established" ? "agree" : s.evidence === "contested" ? "disagree" : "derive"}">${esc((A.confidences[s.evidence] || {}).name || s.evidence)}</span>
         </span>
+        <span class="sc-toggle" aria-hidden="true"><i class="sc-toggle-txt"></i><i class="sc-arrow"></i></span>
       </summary>
       <div class="sc-body">
         <div class="sc-row"><span class="sc-k">现象</span><p>${esc(s.signal)}</p></div>
@@ -311,7 +313,7 @@
       </div>
       <div class="pick-bar no-print" style="margin-top:0.9rem">
         <div class="pick-head">
-          <span class="sec-k">带走一页纸</span>
+          <span class="sec-k">${PRINTER_ICO}带走一页纸</span>
           <span class="filter-meta">勾选 2–3 条情境，合并成一张 A4 · 已选 ${picked.length} / 3</span>
         </div>
         <div class="pick-actions">
