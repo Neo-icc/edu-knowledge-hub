@@ -3441,6 +3441,19 @@ document.addEventListener("visibilitychange", ()=>{
   if(!document.hidden) syncAutoTheme();
 });
 window.addEventListener("focus", syncAutoTheme);
+/* 主题实时同步：父页面（Hub）通过 postMessage 主动通知；storage 事件兜底
+   （覆盖 iframe 尚未加载完成、或未来多标签页共享主题的场景） */
+window.addEventListener("message", (e) => {
+  const d = e.data;
+  if (d && d.type === "theme" && (d.theme === "dark" || d.theme === "light")) {
+    applyTheme(d.theme, true);
+  }
+});
+window.addEventListener("storage", (e) => {
+  if (e.key === "edu-nav-theme" && (e.newValue === "dark" || e.newValue === "light")) {
+    applyTheme(e.newValue, false);
+  }
+});
 
 /* ============ 本机访问计数（本地降级方案） ============ */
 /* 云服务未开通：按设备统计访问次数。同一会话（sessionStorage）只计一次，刷新不重复；

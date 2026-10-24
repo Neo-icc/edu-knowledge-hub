@@ -300,6 +300,12 @@
       localStorage.setItem("atlas-theme", t); // 同步给 practice 子应用
       localStorage.setItem("edu-nav-theme", t); // 同步给 research 子应用
     } catch (e) {}
+    // 实时通知 iframe 内的子应用同步主题（postMessage 为主，storage 事件为兜底）
+    try {
+      if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage({ type: "theme", theme: t }, "*");
+      }
+    } catch (e) {}
   }
   themeBtn.addEventListener("click", function () {
     applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");

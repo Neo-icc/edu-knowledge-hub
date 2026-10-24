@@ -31,6 +31,18 @@
     searchType: "",
   };
 
+  /* ---------------- 主题 ---------------- */
+  function applyTheme(t) {
+    if (t !== "dark" && t !== "light") t = "light";
+    state.theme = t;
+    try { localStorage.setItem("atlas-theme", t); } catch (e) {}
+    document.documentElement.setAttribute("data-theme", t);
+    const ic = document.getElementById("theme-icon");
+    const lb = document.getElementById("theme-label");
+    if (ic) ic.textContent = t === "dark" ? "☾" : "☀";
+    if (lb) lb.textContent = t === "dark" ? "深色" : "浅色";
+  }
+
   /* ---------------- 工具 ---------------- */
   window.ATLAS.debugState = state;
 
@@ -1934,15 +1946,7 @@
   /* ---------------- 事件 ---------------- */
   function bind() {
     /* 主题 */
-    const toggle = () => {
-      state.theme = state.theme === "dark" ? "light" : "dark";
-      localStorage.setItem("atlas-theme", state.theme);
-      document.documentElement.setAttribute("data-theme", state.theme);
-      const ic = document.getElementById("theme-icon");
-      const lb = document.getElementById("theme-label");
-      if (ic) ic.textContent = state.theme === "dark" ? "☾" : "☀";
-      if (lb) lb.textContent = state.theme === "dark" ? "深色" : "浅色";
-    };
+    const toggle = () => applyTheme(state.theme === "dark" ? "light" : "dark");
     const themeToggle = document.getElementById("theme-toggle");
     if (themeToggle) themeToggle.addEventListener("click", toggle);
 
@@ -2136,6 +2140,20 @@
     closeNav();
     render();
     window.scrollTo({ top: 0, behavior: "instant" });
+  });
+
+  /* 主题实时同步：父页面（Hub）通过 postMessage 主动通知；storage 事件兜底
+     （覆盖 iframe 尚未加载完成、或未来多标签页共享主题的场景） */
+  window.addEventListener("message", (e) => {
+    const d = e.data;
+    if (d && d.type === "theme" && (d.theme === "dark" || d.theme === "light")) {
+      applyTheme(d.theme);
+    }
+  });
+  window.addEventListener("storage", (e) => {
+    if (e.key === "atlas-theme" && (e.newValue === "dark" || e.newValue === "light")) {
+      applyTheme(e.newValue);
+    }
   });
 
   document.addEventListener("DOMContentLoaded", render);
