@@ -105,9 +105,9 @@ ATLAS.domains = [
 
 /* 关联类型 */
 ATLAS.linkTypes = {
-  agreement:   { name: "共识关联", en: "Agreement",   color: "oklch(43% 0.12 148)", desc: "不同理论得出相同或彼此印证的结论" },
-  disagreement:{ name: "分歧对立", en: "Disagreement",color: "oklch(46% 0.16 28)",  desc: "核心主张对立，或对同一证据给出冲突解释" },
-  derivative:  { name: "衍生发展", en: "Derivation",  color: "oklch(46% 0.11 252)", desc: "后者对前者的延伸、修正或操作化" },
+  agreement:   { name: "共识关联", en: "Agreement",   color: "oklch(52% 0.11 160)", desc: "不同理论得出相同或彼此印证的结论" },
+  disagreement:{ name: "分歧对立", en: "Disagreement",color: "oklch(52% 0.15 25)",  desc: "核心主张对立，或对同一证据给出冲突解释" },
+  derivative:  { name: "衍生发展", en: "Derivation",  color: "oklch(52% 0.11 255)", desc: "后者对前者的延伸、修正或操作化" },
 };
 
 /* 证据强度 */
