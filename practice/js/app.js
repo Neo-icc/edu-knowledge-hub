@@ -1065,7 +1065,7 @@
     <div class="page-head">
       <span class="eyebrow">Network · 关联网络</span>
       <h1 class="page-title">跨领域关联图谱</h1>
-      <p class="page-lead">节点为知识点，颜色编码领域；连线为共识、分歧与衍生。拖拽节点重排，滚轮缩放，悬停高亮邻接，点击进入条目。</p>
+      <p class="page-lead">节点为知识点，颜色编码领域；连线为共识、分歧与衍生。拖拽节点重排，滚轮或按钮缩放，点击节点进入条目。</p>
       <div class="graph-legend">
         <span class="gl-item"><span class="gl-line" style="background:var(--agree)"></span>共识</span>
         <span class="gl-item"><span class="gl-line" style="background:var(--disagree)"></span>分歧</span>
@@ -1078,265 +1078,352 @@
       <button class="chip on" data-net-type="disagreement">分歧 <span class="n">${S.stats.byType.disagreement}</span></button>
       <button class="chip on" data-net-type="derivative">衍生 <span class="n">${S.stats.byType.derivative}</span></button>
       <button class="chip ${state.netHubs ? "on" : ""}" id="net-hubs">仅枢纽（≥4 关联）</button>
+      <button class="chip" id="net-zoom-in" title="放大">＋</button>
+      <button class="chip" id="net-zoom-out" title="缩小">－</button>
       <button class="chip" id="net-reset">重置视图</button>
       <span class="filter-meta" id="net-count"></span>
     </div>
     <div class="graph-wrap">
-      <svg id="graph" role="img" aria-label="知识点关联网络图"></svg>
-      <div class="graph-tooltip" id="graph-tooltip"></div>
+      <canvas id="graph" role="img" aria-label="知识点关联网络图"></canvas>
+      <div class="graph-nodeinfo" id="graph-nodeinfo"></div>
     </div>
-    <p class="graph-hint">提示：节点标签在低缩放时自动隐藏以避免重叠；悬停节点可查看其全部邻接关系。</p>
+    <p class="graph-hint">提示：拖拽节点重排，滚轮或按钮缩放，点击节点查看详情；节点标签会自动避让重叠。</p>
     ${footHTML()}`;
   }
 
-  function drawGraph(focusId) {
-    const svgEl = document.getElementById("graph");
-    if (!svgEl || typeof d3 === "undefined") {
-      if (svgEl) svgEl.parentNode.insertAdjacentHTML("beforeend", '<div class="empty">图表库未加载</div>');
-      return;
-    }
-    const wrap = svgEl.parentNode;
-    const tooltip = document.getElementById("graph-tooltip");
-    const width = wrap.clientWidth || 900;
-    const height = 620;
+  /* ---------------- 关联网络（Canvas 自绘，参考研究者端实现） ---------------- */
+  const netState = { nodes: [], edges: [], drag: null, offX: 0, offY: 0, scale: 1, hover: null, simTicks: 0, bound: false };
 
-    d3.select(svgEl).selectAll("*").remove();
-    const svg = d3.select(svgEl).attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+  function netDims() {
+    const cv = document.getElementById("graph");
+    return { W: cv ? (cv.clientWidth || 900) : 900, H: cv ? (cv.clientHeight || 620) : 620 };
+  }
 
-    const root = svg.append("g");
-    const zoom = d3.zoom().scaleExtent([0.25, 3.2]).on("zoom", (ev) => root.attr("transform", ev.transform));
-    svg.call(zoom);
-
-    const domIndex = {};
-    S.domains.forEach((d, i) => { domIndex[d.id] = i; });
-    const R = Math.min(width, height) * 0.31;
-    const CX = width / 2, CY = height / 2;
-
+  function buildNet() {
     const nodePool = state.netHubs ? S.entries.filter((e) => S.degree(e.id) >= 4) : S.entries;
     const nodeIds = new Set(nodePool.map((e) => e.id));
-
-    const nodes = nodePool.map((e) => {
-      const i = domIndex[e.domain] || 0;
-      const ang = (-Math.PI / 2) + (i * 2 * Math.PI) / S.domains.length;
-      return {
-        id: e.id, name: e.name, domain: e.domain, degree: S.degree(e.id),
-        r: 5 + Math.min(8, S.degree(e.id) * 0.45),
-        cx: CX + Math.cos(ang) * R,
-        cy: CY + Math.sin(ang) * R,
-      };
+    const domIndex = {};
+    S.domains.forEach((d, i) => { domIndex[d.id] = i; });
+    const map = new Map();
+    nodePool.forEach((e) => {
+      const deg = S.degree(e.id);
+      map.set(e.id, { id: e.id, name: e.name, domain: e.domain, deg, r: 4.5 + Math.min(9, deg * 0.5), hub: deg >= 4, x: 0, y: 0, vx: 0, vy: 0 });
     });
-    const links = S.links
-      .filter((l) => nodeIds.has(l.a) && nodeIds.has(l.b))
-      .map((l) => ({ source: l.a, target: l.b, type: l.type, point: l.point, confidence: l.confidence }));
-
-    const sim = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id((d) => d.id)
-        .distance((l) => {
-          const same = (l.source.domain || l.source) === (l.target.domain || l.target);
-          return same ? 58 : 190;
-        })
-        .strength((l) => {
-          const same = (l.source.domain || l.source) === (l.target.domain || l.target);
-          return same ? 0.42 : 0.08;
-        }))
-      .force("charge", d3.forceManyBody().strength(-58).distanceMax(220))
-      .force("collide", d3.forceCollide((d) => d.r + 3).iterations(2))
-      .force("clusterX", d3.forceX((d) => d.cx).strength(0.20))
-      .force("clusterY", d3.forceY((d) => d.cy).strength(0.26));
-
-    const defs = svg.append("defs");
-    Object.keys(A.linkTypes).forEach((type) => {
-      defs.append("marker").attr("id", "arw-" + type)
-        .attr("viewBox", "0 -5 10 10").attr("refX", 16).attr("refY", 0)
-        .attr("markerWidth", 6).attr("markerHeight", 6).attr("orient", "auto")
-        .append("path").attr("d", "M0,-5L10,0L0,5")
-        .attr("fill", A.linkTypes[type].color);
+    netState.edges = [];
+    S.links.forEach((l) => {
+      if (!nodeIds.has(l.a) || !nodeIds.has(l.b)) return;
+      const a = map.get(l.a), b = map.get(l.b);
+      if (!a || !b || a === b) return;
+      netState.edges.push({ a, b, type: l.type, point: l.point });
     });
-
-    const link = root.append("g").selectAll("line").data(links).enter().append("line")
-      .attr("stroke", (d) => A.linkTypes[d.type].color)
-      .attr("stroke-width", (d) => (d.type === "disagreement" ? 1.6 : 1.3))
-      .attr("stroke-opacity", 0.32)
-      .attr("stroke-dasharray", (d) => (d.type === "derivative" ? "4 4" : null))
-      .attr("marker-end", (d) => (d.type === "derivative" ? "url(#arw-derivative)" : null));
-
-    const node = root.append("g").selectAll("g").data(nodes).enter().append("g")
-      .attr("class", "node").style("cursor", "pointer")
-      .call(d3.drag()
-        .on("start", (ev, d) => { if (!ev.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
-        .on("drag", (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
-        .on("end", (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }))
-      .on("click", (ev, d) => { go("#/entry/" + d.id); });
-
-    node.append("circle")
-      .attr("r", (d) => d.r)
-      .attr("fill", (d) => domainColor(d.domain))
-      .attr("stroke", "var(--paper-2)")
-      .attr("stroke-width", 2);
-
-    node.append("text")
-      .text((d) => d.name)
-      .attr("x", (d) => d.r + 4).attr("y", 3.5)
-      .attr("font-size", "9.5px")
-      .attr("font-family", "var(--sans)")
-      .attr("fill", "var(--ink-2)")
-      .attr("pointer-events", "none")
-      .attr("opacity", 0);
-
-    /* 领域簇水印：置于最底层，标示五个聚类 */
-    const clusterLabels = S.domains.map((d, i) => {
-      const ang = (-Math.PI / 2) + (i * 2 * Math.PI) / S.domains.length;
-      const rr = R * 1.22;
-      return {
-        name: d.name, color: d.color,
-        x: Math.max(64, Math.min(width - 64, CX + Math.cos(ang) * rr)),
-        y: Math.max(18, Math.min(height - 10, CY + Math.sin(ang) * rr)),
-      };
+    netState.nodes = [...map.values()];
+    const { W, H } = netDims();
+    const R = Math.min(W, H) * 0.30;
+    netState.nodes.forEach((n) => {
+      const i = domIndex[n.domain] || 0;
+      const ang = (-Math.PI / 2) + (i * 2 * Math.PI) / Math.max(1, S.domains.length);
+      n.x = W / 2 + Math.cos(ang) * R + (Math.random() - 0.5) * 70;
+      n.y = H / 2 + Math.sin(ang) * R + (Math.random() - 0.5) * 70;
     });
-    root.insert("g", ":first-child").selectAll("text").data(clusterLabels).enter().append("text")
-      .attr("x", (d) => d.x).attr("y", (d) => d.y)
-      .attr("text-anchor", "middle")
-      .attr("font-family", "var(--mono)")
-      .attr("font-size", "10.5px")
-      .attr("letter-spacing", "0.18em")
-      .attr("fill", (d) => d.color)
-      .attr("opacity", 0.42)
-      .attr("pointer-events", "none")
-      .text((d) => d.name);
+    netState.simTicks = 0;
+    netState.scale = 1; netState.offX = 0; netState.offY = 0; netState.hover = null; netState.drag = null;
+  }
 
-    /* 标签防重叠：只标注枢纽节点，按度数优先贪心放置 */
-    const placed = [];
-    function labelBox(d) {
-      const fs = 9.5;
-      const w = d.name.length * fs * 0.96;
-      const h = fs + 3;
-      const left = d.x > width - w - 40;
-      const x = left ? -d.r - 5 : d.r + 5;
-      return {
-        x: left ? d.x - w : d.x + d.r + 5,
-        y: d.y - h / 2,
-        w, h, left, x,
-      };
+  function netSimulate() {
+    const nodes = netState.nodes;
+    const edges = netState.edges.filter((e) => state.netType[e.type]);
+    const { W, H } = netDims();
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+        if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = dx * dx + dy * dy + 0.01; }
+        const d = Math.sqrt(d2);
+        const rep = 2600 / d2;
+        const fx = dx / d * rep, fy = dy / d * rep;
+        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+      }
     }
-    function declutter() {
-      placed.length = 0;
-      const sorted = nodes.slice().sort((a, b) => b.degree - a.degree).slice(0, 18);
-      const visible = new Set();
-      sorted.forEach((d) => {
-        const b = labelBox(d);
-        const hit = placed.some((p) => !(b.x + b.w < p.x || p.x + p.w < b.x || b.y + b.h < p.y || p.y + p.h < b.y));
-        if (!hit) { placed.push(b); visible.add(d.id); }
+    edges.forEach((e) => {
+      const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      const same = e.a.domain === e.b.domain;
+      const target = same ? 70 : 150;
+      const f = (d - target) * 0.004;
+      const fx = dx / d * f, fy = dy / d * f;
+      e.a.vx += fx; e.a.vy += fy; e.b.vx -= fx; e.b.vy -= fy;
+    });
+    nodes.forEach((n) => {
+      n.vx += (W / 2 - n.x) * 0.0018;
+      n.vy += (H / 2 - n.y) * 0.0018;
+      n.vx *= 0.86; n.vy *= 0.86;
+      n.x += n.vx; n.y += n.vy;
+    });
+    if (nodes.length) {
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      nodes.forEach((n) => {
+        if (n.x - n.r < minX) minX = n.x - n.r;
+        if (n.x + n.r > maxX) maxX = n.x + n.r;
+        if (n.y - n.r < minY) minY = n.y - n.r;
+        if (n.y + n.r > maxY) maxY = n.y + n.r;
       });
-      node.select("text")
-        .attr("opacity", (d) => (visible.has(d.id) ? 0.95 : 0))
-        .attr("text-anchor", (d) => (labelBox(d).left ? "end" : "start"))
-        .attr("x", (d) => labelBox(d).x - d.x);
+      const spanX = Math.max(1, maxX - minX), spanY = Math.max(1, maxY - minY);
+      const k = Math.min(1, (W - 120) / spanX, (H - 80) / spanY);
+      if (k < 1) {
+        const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+        nodes.forEach((n) => { n.x = W / 2 + (n.x - cx) * k; n.y = H / 2 + (n.y - cy) * k; n.vx *= 0.5; n.vy *= 0.5; });
+      }
+    }
+  }
+
+  function netDraw() {
+    const cv = document.getElementById("graph");
+    if (!cv) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (!W || !H) return;
+    if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    if (netState.simTicks < 320) { for (let k = 0; k < 5 && netState.simTicks < 320; k++) { netSimulate(); netState.simTicks++; } }
+    const css = getComputedStyle(document.documentElement);
+    const col = {
+      agreement: css.getPropertyValue("--agree").trim() || "#3fa17c",
+      disagreement: css.getPropertyValue("--disagree").trim() || "#c0574a",
+      derivative: css.getPropertyValue("--derive").trim() || "#5b7fd6",
+      fg: css.getPropertyValue("--ink").trim(),
+      fg2: css.getPropertyValue("--ink-2").trim(),
+      fg3: css.getPropertyValue("--ink-4").trim(),
+      bg: css.getPropertyValue("--paper").trim(),
+      paper2: css.getPropertyValue("--paper-2").trim(),
+    };
+    ctx.translate(netState.offX, netState.offY);
+    ctx.scale(netState.scale, netState.scale);
+
+    // 边
+    netState.edges.forEach((e) => {
+      if (!state.netType[e.type]) return;
+      ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y);
+      ctx.strokeStyle = col[e.type];
+      ctx.globalAlpha = e.type === "disagreement" ? 0.32 : 0.4;
+      ctx.lineWidth = e.type === "disagreement" ? 1.5 : 1;
+      if (e.type === "derivative") ctx.setLineDash([5, 4]); else ctx.setLineDash([]);
+      ctx.stroke(); ctx.globalAlpha = 1; ctx.setLineDash([]);
+    });
+
+    // 节点
+    netState.nodes.forEach((n) => {
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = domainColor(n.domain);
+      ctx.globalAlpha = n.hub ? 1 : 0.82; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = col.paper2; ctx.lineWidth = n.hub ? 2.2 : 1.4; ctx.stroke();
+    });
+
+    // 标签防重叠（按度数优先 + 引导线 + 碰撞解决）
+    const sc = netState.scale || 1;
+    const visL = -netState.offX / sc, visT = -netState.offY / sc;
+    const visR = visL + W / sc, visB = visT + H / sc;
+    const inView = (x, y, m) => x >= visL - m && x <= visR + m && y >= visT - m && y <= visB + m;
+    const queue = netState.nodes.slice().sort((a, b) => b.deg - a.deg);
+    const labels = [];
+    queue.forEach((n, idx) => {
+      const big = n.hub || n.deg >= 3;
+      ctx.font = (n.hub ? "600 " : "") + (big ? "12.5px" : "11px") + ' "PingFang SC","Microsoft YaHei",sans-serif';
+      const tw = ctx.measureText(n.name).width;
+      const bh = big ? 16 : 14;
+      const above = idx % 2 === 0;
+      labels.push({ n, big, box: above ? { x: n.x - tw / 2 - 4, y: n.y - n.r - 8 - bh, w: tw + 8, h: bh } : { x: n.x - tw / 2 - 4, y: n.y + n.r + 8, w: tw + 8, h: bh } });
+    });
+    const maxLead = 90, damp = 0.5;
+    for (let iter = 0; iter < 120; iter++) {
+      let moved = false;
+      for (let i = 0; i < labels.length; i++) {
+        const A = labels[i].box;
+        for (let j = i + 1; j < labels.length; j++) {
+          const B = labels[j].box;
+          if (A.x + A.w <= B.x || B.x + B.w <= A.x || A.y + A.h <= B.y || B.y + B.h <= A.y) continue;
+          const ox = Math.min(A.x + A.w, B.x + B.w) - Math.max(A.x, B.x);
+          const oy = Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y);
+          const dirX = Math.sign(B.x + B.w / 2 - (A.x + A.w / 2)) || 1;
+          const dirY = Math.sign(B.y + B.h / 2 - (A.y + A.h / 2)) || 1;
+          A.x -= ox / 2 * damp * dirX; B.x += ox / 2 * damp * dirX;
+          A.y -= oy / 2 * damp * dirY; B.y += oy / 2 * damp * dirY;
+          moved = true;
+        }
+      }
+      labels.forEach((L) => {
+        const b = L.box, n = L.n;
+        if (inView(n.x, n.y, 24)) { b.x = Math.max(visL + 4, Math.min(b.x, visR - b.w - 4)); b.y = Math.max(visT + 4, Math.min(b.y, visB - b.h - 4)); }
+        const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+        const dx = cx - n.x, dy = cy - n.y, d = Math.hypot(dx, dy);
+        if (d > maxLead) { const k = maxLead / d; b.x = n.x + dx * k - b.w / 2; b.y = n.y + dy * k - b.h / 2; }
+      });
+      if (!moved) break;
+    }
+    let leaderCount = 0;
+    labels.forEach((L) => {
+      const { n, box, big } = L;
+      const nx = Math.max(box.x, Math.min(n.x, box.x + box.w));
+      const ny = Math.max(box.y, Math.min(n.y, box.y + box.h));
+      const dx = nx - n.x, dy = ny - n.y, d = Math.hypot(dx, dy);
+      if (d > n.r + 20) {
+        leaderCount++;
+        const ux = dx / (d || 1), uy = dy / (d || 1);
+        ctx.beginPath(); ctx.moveTo(n.x + ux * n.r, n.y + uy * n.r); ctx.lineTo(nx - ux * 3, ny - uy * 3);
+        ctx.strokeStyle = col.fg3; ctx.globalAlpha = 0.4; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      ctx.font = (n.hub ? "600 " : "") + (big ? "12.5px" : "11px") + ' "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.fillStyle = col.fg2;
+      ctx.globalAlpha = n.hub ? 0.95 : (big ? 0.8 : 0.66);
+      ctx.textAlign = "center";
+      ctx.fillText(n.name, box.x + box.w / 2, box.y + box.h / 2 + 4);
+      ctx.globalAlpha = 1;
+    });
+
+    // hover 高亮
+    if (netState.hover) {
+      const hn = netState.nodes.find((n) => n.id === netState.hover);
+      if (hn) {
+        ctx.beginPath(); ctx.arc(hn.x, hn.y, hn.r + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = col.agreement; ctx.lineWidth = 2; ctx.globalAlpha = 0.55; ctx.stroke(); ctx.globalAlpha = 1;
+      }
     }
 
-    function showTip(html, ev) {
-      const r = wrap.getBoundingClientRect();
-      tooltip.innerHTML = html;
-      tooltip.style.opacity = 1;
-      tooltip.style.left = Math.min(ev.clientX - r.left + 14, r.width - 340) + "px";
-      tooltip.style.top = ev.clientY - r.top + 14 + "px";
-    }
+    const busy = netState.simTicks < 320 || netState.drag;
+    if (busy) requestAnimationFrame(netDraw);
+  }
 
-    node.on("mouseover", function (ev, d) {
-      const nb = new Set([d.id]);
-      link.attr("stroke-opacity", (l) => {
-        const s = l.source.id || l.source, t = l.target.id || l.target;
-        if (s === d.id || t === d.id) { nb.add(s); nb.add(t); return 0.95; }
-        return 0.05;
-      }).attr("stroke-width", (l) => {
-        const s = l.source.id || l.source, t = l.target.id || l.target;
-        return (s === d.id || t === d.id) ? 2.4 : 1;
-      });
-      node.style("opacity", (n) => (nb.has(n.id) ? 1 : 0.12));
-      d3.select(this).select("text").attr("opacity", 1);
-      const e = S.byId[d.id];
-      const rel = S.adj[d.id] || [];
-      const ag = rel.filter((n) => n.link.type === "agreement").length;
-      const di = rel.filter((n) => n.link.type === "disagreement").length;
-      const de = rel.filter((n) => n.link.type === "derivative").length;
-      showTip(`<b>${esc(e.name)}</b><br/><span style="opacity:.72">${esc(branchOf(e.branch).name)} · ${fmtYear(e.year)}</span><br/>共识 ${ag} · 分歧 ${di} · 衍生 ${de}`, ev);
-    }).on("mousemove", (ev, d) => {
-      const e = S.byId[d.id];
-      const rel = S.adj[d.id] || [];
-      const ag = rel.filter((n) => n.link.type === "agreement").length;
-      const di = rel.filter((n) => n.link.type === "disagreement").length;
-      const de = rel.filter((n) => n.link.type === "derivative").length;
-      showTip(`<b>${esc(e.name)}</b><br/><span style="opacity:.72">${esc(branchOf(e.branch).name)} · ${fmtYear(e.year)}</span><br/>共识 ${ag} · 分歧 ${di} · 衍生 ${de}`, ev);
-    }).on("mouseout", function () {
-      link.attr("stroke-opacity", 0.32).attr("stroke-width", (d) => (d.type === "disagreement" ? 1.6 : 1.3));
-      node.style("opacity", 1);
-      declutter();
-      tooltip.style.opacity = 0;
-    });
-
-    link.on("mouseover", function (ev, d) {
-      d3.select(this).attr("stroke-opacity", 1).attr("stroke-width", 2.6);
-      const a = S.byId[d.source.id || d.source], b = S.byId[d.target.id || d.target];
-      showTip(`<b>${esc(a.name)}</b> ${linkSymbol[d.type]} <b>${esc(b.name)}</b><br/><span style="opacity:.78">${esc(d.point)}</span>`, ev);
-    }).on("mousemove", (ev, d) => {
-      const a = S.byId[d.source.id || d.source], b = S.byId[d.target.id || d.target];
-      showTip(`<b>${esc(a.name)}</b> ${linkSymbol[d.type]} <b>${esc(b.name)}</b><br/><span style="opacity:.78">${esc(d.point)}</span>`, ev);
-    }).on("mouseout", function () {
-      d3.select(this).attr("stroke-opacity", 0.32).attr("stroke-width", (d) => (d.type === "disagreement" ? 1.6 : 1.3));
-      tooltip.style.opacity = 0;
-    });
-
-    sim.on("tick", () => {
-      nodes.forEach((d) => {
-        const r = d.r + 8;
-        if (d.x < r) d.x = r;
-        if (d.x > width - r) d.x = width - r;
-        if (d.y < r) d.y = r;
-        if (d.y > height - r) d.y = height - r;
-      });
-      link.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y)
-          .attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
-      node.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    });
-
-    sim.on("end", declutter);
-    setTimeout(declutter, 2200);
-
-    /* 类型筛选 */
+  function netApplyFilter() {
     const counter = document.getElementById("net-count");
-    function applyFilter() {
-      const active = state.netType;
-      link.style("display", (d) => (active[d.type] ? null : "none"));
-      let shown = links.filter((d) => active[d.type]).length;
-      if (counter) counter.textContent = nodes.length + " 节点 · " + shown + " 连线";
+    if (!counter) return;
+    const shown = netState.edges.filter((e) => state.netType[e.type]).length;
+    counter.textContent = netState.nodes.length + " 节点 · " + shown + " 连线";
+  }
+
+  function netHit(mx, my, pad) {
+    const sc = netState.scale;
+    const x = (mx - netState.offX) / sc, y = (my - netState.offY) / sc;
+    for (const n of netState.nodes) {
+      if (Math.hypot(n.x - x, n.y - y) < n.r + (pad || 8)) return n;
     }
+    return null;
+  }
+
+  function netHideInfo() {
+    const box = document.getElementById("graph-nodeinfo");
+    if (box) box.classList.remove("on");
+  }
+
+  function netShowInfo(n) {
+    const box = document.getElementById("graph-nodeinfo");
+    if (!box) return;
+    const rel = S.adj[n.id] || [];
+    const ag = rel.filter((x) => x.link.type === "agreement").length;
+    const di = rel.filter((x) => x.link.type === "disagreement").length;
+    const de = rel.filter((x) => x.link.type === "derivative").length;
+    const e = S.byId[n.id];
+    const dom = domainOf(n.domain);
+    box.innerHTML = `<div class="ni-head"><span class="ni-name" style="color:${dom.color}">${esc(n.name)}</span><button class="ni-close" id="ni-close" title="关闭" aria-label="关闭">✕</button></div>
+      <div class="ni-meta">${esc(dom.name)} · ${fmtYear(e && e.year)} · 关联 ${n.deg}</div>
+      <div class="ni-rel">共识 <b>${ag}</b> · 分歧 <b>${di}</b> · 衍生 <b>${de}</b></div>
+      <a class="ni-link" href="#/entry/${n.id}">查看详解 →</a>`;
+    box.classList.add("on");
+    document.getElementById("ni-close").onclick = () => netHideInfo();
+  }
+
+  function initNetInteraction() {
+    const cv = document.getElementById("graph");
+    if (!cv || netState.bound) return;
+    netState.bound = true;
+    const wrap = cv.parentNode;
+
+    cv.addEventListener("mousedown", (e) => {
+      const r = cv.getBoundingClientRect();
+      const hit = netHit(e.clientX - r.left, e.clientY - r.top, 6);
+      if (hit) { netState.drag = hit; return; }
+      netState.panning = { x: e.clientX, y: e.clientY, ox: netState.offX, oy: netState.offY };
+    });
+    window.addEventListener("mousemove", (e) => {
+      const r = cv.getBoundingClientRect();
+      if (netState.drag) {
+        netState.drag.x = (e.clientX - r.left - netState.offX) / netState.scale;
+        netState.drag.y = (e.clientY - r.top - netState.offY) / netState.scale;
+        netState.drag.vx = netState.drag.vy = 0;
+      } else if (netState.panning) {
+        netState.offX = netState.panning.ox + (e.clientX - netState.panning.x);
+        netState.offY = netState.panning.oy + (e.clientY - netState.panning.y);
+      } else {
+        const hit = netHit(e.clientX - r.left, e.clientY - r.top, 4);
+        const hid = hit ? hit.id : null;
+        if (hid !== netState.hover) { netState.hover = hid; cv.style.cursor = hid ? "pointer" : "grab"; }
+      }
+      if (netState.drag || netState.panning) netDraw();
+    });
+    cv.addEventListener("mouseleave", () => { netState.hover = null; cv.style.cursor = "grab"; });
+    window.addEventListener("mouseup", () => { netState.drag = null; netState.panning = null; });
+
+    cv.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const r = cv.getBoundingClientRect();
+      const mx = e.clientX - r.left, my = e.clientY - r.top;
+      const old = netState.scale;
+      const next = Math.max(0.3, Math.min(3.5, old * (e.deltaY < 0 ? 1.12 : 0.89)));
+      netState.offX = mx - (mx - netState.offX) * (next / old);
+      netState.offY = my - (my - netState.offY) * (next / old);
+      netState.scale = next;
+      netDraw();
+    }, { passive: false });
+
+    cv.addEventListener("click", (e) => {
+      const r = cv.getBoundingClientRect();
+      const hit = netHit(e.clientX - r.left, e.clientY - r.top, 6);
+      if (hit) netShowInfo(hit); else netHideInfo();
+    });
+
+    const zoomBy = (f) => {
+      const r = cv.getBoundingClientRect(), mx = r.width / 2, my = r.height / 2;
+      const old = netState.scale, next = Math.max(0.3, Math.min(3.5, old * f));
+      netState.offX = mx - (mx - netState.offX) * (next / old);
+      netState.offY = my - (my - netState.offY) * (next / old);
+      netState.scale = next;
+      netDraw();
+    };
+    const zi = document.getElementById("net-zoom-in"), zo = document.getElementById("net-zoom-out"), zr = document.getElementById("net-reset");
+    if (zi) zi.onclick = () => zoomBy(1.25);
+    if (zo) zo.onclick = () => zoomBy(1 / 1.25);
+    if (zr) zr.onclick = () => { netState.scale = 1; netState.offX = 0; netState.offY = 0; netHideInfo(); netDraw(); };
+
     document.querySelectorAll("[data-net-type]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.onclick = () => {
         const t = btn.dataset.netType;
         state.netType[t] = !state.netType[t];
         btn.classList.toggle("on", state.netType[t]);
         btn.setAttribute("aria-pressed", state.netType[t] ? "true" : "false");
-        applyFilter();
-      });
-    });
-    applyFilter();
-
-    const reset = document.getElementById("net-reset");
-    if (reset) reset.addEventListener("click", () => {
-      svg.transition().duration(450).call(zoom.transform, d3.zoomIdentity);
+        netApplyFilter();
+        netDraw();
+      };
     });
 
+    window.addEventListener("resize", () => { netDraw(); });
+  }
+
+  function drawGraph(focusId) {
+    const cv = document.getElementById("graph");
+    if (!cv) return;
+    netState.bound = false;
+    buildNet();
+    netApplyFilter();
+    initNetInteraction();
     if (focusId) {
-      const target = nodes.find((n) => n.id === focusId);
+      const target = netState.nodes.find((n) => n.id === focusId);
       if (target) {
-        setTimeout(() => {
-          const scale = 1.8;
-          svg.transition().duration(650).call(
-            zoom.transform,
-            d3.zoomIdentity.translate(width / 2 - target.x * scale, height / 2 - target.y * scale).scale(scale)
-          );
-        }, 900);
+        netState.scale = 1.8;
+        netState.offX = (netDims().W / 2) - target.x * netState.scale;
+        netState.offY = (netDims().H / 2) - target.y * netState.scale;
       }
     }
+    requestAnimationFrame(netDraw);
   }
 
   /* ---------------- 对比 ---------------- */
