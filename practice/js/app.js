@@ -132,8 +132,6 @@
         ["#/path", "按关联 · 路径", "path"],
         ["#/compare", "理论对比", "compare"],
         ["#/learning-path", "阅读路径", "learning-path"],
-        ["#/integrity", "按证据 · 数据自检", "integrity"],
-        ["#/methods", "方法与边界", "methods"],
         ["#/glossary", "术语索引", "glossary"],
         ["#/thinkers", "人物索引", "thinkers"],
       ]},
@@ -1501,110 +1499,6 @@
     ${footHTML()}`;
   }
 
-  /* ---------------- 数据自检 ---------------- */
-  function viewIntegrity() {
-    const r = S.integrity();
-    const st = S.stats;
-
-    const domainRows = S.domains.map((d) => {
-      const n = r.countByDomain[d.id] || 0;
-      const branchSum = d.branches.reduce((x, b) => x + (S.entriesOfBranch[b.id] || []).length, 0);
-      const ok = n === branchSum;
-      const branchList = d.branches.map((b) => `${esc(b.name)} <b>${(S.entriesOfBranch[b.id] || []).length}</b>`).join(" · ");
-      return `<tr>
-        <td>${esc(d.name)}</td>
-        <td style="text-align:right;font-variant-numeric:tabular-nums">${n}</td>
-        <td style="text-align:right;font-variant-numeric:tabular-nums">${branchSum}</td>
-        <td><span class="badge ${ok ? "agree" : "disagree"}">${ok ? "一致" : "不一致"}</span></td>
-        <td style="font-size:0.78rem;color:var(--ink-4)">${branchList}</td>
-      </tr>`;
-    }).join("");
-
-    const issues = r.issues.length
-      ? r.issues.map((i) => `<div class="issue ${i.level}">
-          <span class="lv">${i.level === "error" ? "错误" : "提示"}</span>
-          <span>${esc(i.text)}${i.ref ? `　<a href="#/entry/${i.ref}">查看</a>` : ""}</span>
-        </div>`).join("")
-      : `<div class="issue"><span class="lv" style="background:var(--agree-bg);color:var(--agree)">通过</span><span>未发现结构性问题：所有条目均有详解、术语、有效分支，且计数一致。</span></div>`;
-
-    const orphans = S.entries.filter((e) => S.degree(e.id) === 0);
-
-    const scAges = Array.from(new Set(S.scenarios.map((s) => s.age)));
-    const scLinked = new Set();
-    S.scenarios.forEach((s) => (s.links || []).forEach((id) => scLinked.add(id)));
-
-    return `
-    <div class="page-head">
-      <span class="eyebrow">Integrity · 数据自检</span>
-      <h1 class="page-title">一致性仪表盘</h1>
-      <p class="page-lead">所有统计都在渲染时从同一份数据实时计算，不存在「概览写 110、列表写 100」的口径分裂。本页列出结构性校验结果。</p>
-    </div>
-
-    <div class="audit-summary">
-      <div class="audit-cell ok"><div class="n">${st.entries}</div><div class="l">条目</div></div>
-      <div class="audit-cell ok"><div class="n">${st.detailed}</div><div class="l">含详解</div></div>
-      <div class="audit-cell ok"><div class="n">${st.links}</div><div class="l">关联</div></div>
-      <div class="audit-cell ${r.errors ? "bad" : "ok"}"><div class="n">${r.errors}</div><div class="l">结构错误</div></div>
-    </div>
-
-    <section class="sec" style="margin-top:1.5rem">
-      <div class="sec-head"><span class="sec-k">Checks · 校验结果</span><span class="filter-meta">${r.errors} 错误 · ${r.warnings} 提示</span></div>
-      <div class="issue-list">${issues}</div>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-k">Counts · 领域与分支计数</span></div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:0.86rem">
-          <thead><tr style="border-bottom:1px solid var(--rule-2);text-align:left">
-            <th style="padding:0.5rem 0.4rem;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.1em;color:var(--ink-5)">领域</th>
-            <th style="padding:0.5rem 0.4rem;text-align:right;font-family:var(--mono);font-size:0.66rem;color:var(--ink-5)">条目</th>
-            <th style="padding:0.5rem 0.4rem;text-align:right;font-family:var(--mono);font-size:0.66rem;color:var(--ink-5)">分支合计</th>
-            <th style="padding:0.5rem 0.4rem;font-family:var(--mono);font-size:0.66rem;color:var(--ink-5)">状态</th>
-            <th style="padding:0.5rem 0.4rem;font-family:var(--mono);font-size:0.66rem;color:var(--ink-5)">分布</th>
-          </tr></thead>
-          <tbody>${domainRows}</tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-k">Graph · 图谱健康度</span></div>
-      <div class="aside-block">
-        <div class="aside-row"><span>平均每节点关联</span><b>${(st.links * 2 / st.entries).toFixed(2)}</b></div>
-        <div class="aside-row"><span>孤立节点</span><b>${orphans.length}</b></div>
-        <div class="aside-row"><span>证据强度分布</span><b>${Object.keys(st.byConfidence).map((k) => (A.confidences[k] ? A.confidences[k].name : k) + " " + st.byConfidence[k]).join(" · ")}</b></div>
-        <div class="aside-row"><span>术语卡</span><b>${st.terms}</b></div>
-        <div class="aside-row"><span>年份跨度</span><b>${fmtYear(st.yearRange[0])} — ${st.yearRange[1]}</b></div>
-      </div>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-k">Citations · 引用可核验性</span><span class="filter-meta">经 Crossref 逐条比对</span></div>
-      <div class="aside-block">
-        <div class="aside-row"><span>证据条目总数</span><b>${st.evidenceItems}</b></div>
-        <div class="aside-row"><span>DOI 可直达</span><b>${st.doiItems}（${(st.doiItems / st.evidenceItems * 100).toFixed(1)}%）</b></div>
-        <div class="aside-row"><span>有明确出处（书名 / 期刊 / 标题）</span><b>${st.evidenceRefs}</b></div>
-        <div class="aside-row"><span>仅作者与年份</span><b>${st.evidenceTraces}</b></div>
-        <div class="aside-row"><span>综述性表述</span><b>${st.evidenceReviews}</b></div>
-        <div class="aside-row"><span>含 DOI 的条目</span><b>${st.entriesWithDoi} / ${st.entries}</b></div>
-      </div>
-      <p class="graph-hint">DOI 由 Crossref API 按「标题相似度 ≥ 0.8 且年份相差 ≤ 2 年」匹配，匹配不上的位置留空，不做猜测性补全。</p>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-k">Scenarios · 场景与课堂活动</span></div>
-      <div class="aside-block">
-        <div class="aside-row"><span>情境数</span><b>${st.scenarios}</b></div>
-        <div class="aside-row"><span>含 5 分钟课堂活动</span><b>${st.activities}</b></div>
-        <div class="aside-row"><span>覆盖年龄档</span><b>${scAges.length} 档（${scAges.map((a) => (AGE_NAME[a] || a)).join(" / ")}）</b></div>
-        <div class="aside-row"><span>被引用的条目</span><b>${scLinked.size}</b></div>
-        <div class="aside-row"><span>打印页</span><b>${st.scenarios} 条均可单独成页</b></div>
-      </div>
-    </section>
-    ${footHTML()}`;
-  }
-
   /* ---------------- 阅读路径 ---------------- */
   function viewLearningPath(query) {
     const domain = query.domain || state.lpDomain || "";
@@ -1652,87 +1546,6 @@
     </div>
     <div class="lp-grid">${stageHTML}</div>
     <p class="graph-hint">${lp.hasCycle ? "提示：衍生关系存在环路，环路内条目已按年代补入后段。" : "衍生关系为有向无环图，顺序有唯一的基础拓扑解。"}</p>
-    ${footHTML()}`;
-  }
-
-  /* ---------------- 方法与边界 ---------------- */
-  function viewMethods() {
-    const st = S.stats;
-    const conf = Object.keys(A.confidences).map((k) => `<div class="aside-row"><span>${esc(A.confidences[k].name)} · ${esc(A.confidences[k].en)}</span><b>${st.byConfidence[k] || 0}</b></div>`).join("");
-    return `
-    <div class="page-head">
-      <span class="eyebrow">Method · 方法与边界</span>
-      <h1 class="page-title">这份图谱是怎么做出来的</h1>
-      <p class="page-lead">一份知识产品必须先说明自己的编制规则与限制，否则读者无法判断该在多大程度上信任它。以下内容对全站生效，也接受同一套自检。</p>
-    </div>
-
-    <div class="detail-main">
-      <section class="dsection">
-        <h2><span class="dot"></span>面向谁</h2>
-        <ul class="bullets">
-          <li><b>老师</b>：按课堂情境进入场景库，每条给出可执行的课堂动作、先别做的事、可直接使用的课堂语言，以及转介建议；其中 ${st.activities} 条另配 5 分钟课堂活动脚本，可单独打印。</li>
-          <li><b>家长</b>：按孩子年龄进入，每条给出可能的解释、在家可以试的做法、先别做的事、可以对孩子说的话，以及何时该找专业帮助；可把 2–3 条合并打印成一张 A4，家长会、家访或面谈时一次带走。</li>
-          <li><b>研究者与学生</b>：按领域与关联网络进入，可对比、寻路、查看证据分级与引用格式。</li>
-        </ul>
-        <p style="font-size:.92rem;color:var(--ink-3);line-height:1.8;margin-top:.6rem">场景库共 ${st.scenarios} 条，是对站内条目的<strong>编辑性综合</strong>，不是新的研究结论；每条都回链到机制条目，便于核对依据。它不构成诊断，也不能替代个别化评估。</p>
-      </section>
-
-      <section class="dsection">
-        <h2><span class="dot"></span>六层结构</h2>
-        <ol class="nums">
-          <li><b>领域</b>：按研究对象的差异划分五个板块，不按学科建制划分。</li>
-          <li><b>分支</b>：每个领域下 6–7 个分支，共 ${st.branches} 个，全部有内容覆盖。</li>
-          <li><b>条目</b>：${st.entries} 条，统一含定义、核心论断、学界共识、学术分歧、实证来源、教育应用。</li>
-          <li><b>术语卡</b>：${st.terms} 张，从条目中抽出的最小概念单元，可独立检索并回链原条目。</li>
-          <li><b>关联</b>：${st.links} 条，分共识、分歧、衍生三类，每条都写明关系发生在哪个机制层面。</li>
-          <li><b>场景</b>：${st.scenarios} 条，把机制转成老师与家长可执行的动作与话术，并标注证据强度与转介边界。</li>
-        </ol>
-      </section>
-
-      <section class="dsection">
-        <h2><span class="dot"></span>关联的四条判定标准</h2>
-        <ul class="bullets">
-          <li><b>机制级而非主题级</b>：不写「两者都研究学习」，而写清共享哪条假设、在哪个环节冲突。</li>
-          <li><b>可追溯</b>：每条关联都能落到具体条目与人物，不做跨条目的模糊概括。</li>
-          <li><b>分歧必须双方并举</b>：每条分歧都给出两方立场与「争议焦点」，不把一方写成结论。</li>
-          <li><b>允许一对多型</b>：同一对条目可以在一个层面共识、在另一个层面分歧，不做强行归一。</li>
-        </ul>
-      </section>
-
-      <section class="dsection">
-        <h2><span class="dot"></span>证据分级</h2>
-        <p style="font-size:.95rem;color:var(--ink-2);line-height:1.8;margin-bottom:.8rem">全站关联按证据状态标注四档。分级针对「这条关联」，不针对整条理论。</p>
-        <div class="aside-block" style="background:var(--paper-2)">${conf}</div>
-        <ul class="bullets" style="margin-top:.8rem">
-          ${Object.keys(A.confidences).map((k) => `<li><b>${esc(A.confidences[k].name)}</b>：${esc(A.confidences[k].desc)}</li>`).join("")}
-        </ul>
-      </section>
-
-      <section class="dsection disagree">
-        <h2><span class="dot"></span>已知限制</h2>
-        <ul class="bullets">
-          <li><b>不是系统综述</b>：条目为综述性整理，用于定位与入门，不能替代原始文献与元分析。</li>
-          <li><b>来源可核验但未穷尽</b>：${st.evidenceItems} 条证据中，${st.doiItems} 条给出经 Crossref 核验的 DOI（${(st.doiItems / st.evidenceItems * 100).toFixed(1)}%），覆盖 ${st.entriesWithDoi} 个条目；${st.evidenceRefs} 条标注了可定位的作品名，${st.evidenceTraces} 条只有作者与年份。匹配不上 DOI 的一律留空，不做猜测性补全。</li>
-          <li><b>机制到教学需中介</b>：脑科学条目的应用建议均经认知与课堂研究转译，不做神经还原式推论。</li>
-          <li><b>覆盖不均衡</b>：以英语学界与中文可及文献为主，非西方传统与本土研究收录有限。</li>
-          <li><b>关联存在取舍</b>：${st.links} 条关联是选择的结果，未收录的关系不代表不存在。</li>
-        </ul>
-      </section>
-
-      <section class="dsection">
-        <h2><span class="dot"></span>引用格式</h2>
-        <div class="term" style="cursor:text">
-          <div class="td">教育与心智知识图谱（v${esc(A.meta.version)}）. 条目「巴甫洛夫经典条件反射」. 检索于 ${new Date().toISOString().slice(0, 10)}.</div>
-        </div>
-        <p class="graph-hint">条目页底部提供单条引用文本，可直接复制。</p>
-      </section>
-
-      <section class="dsection">
-        <h2><span class="dot"></span>质量自检</h2>
-        <p style="font-size:.95rem;color:var(--ink-2);line-height:1.8">全站统计在渲染时从同一份数据实时计算，不存在多处口径不一致；分支计数、孤立节点、缺失详解、引文覆盖均可在自检页逐项核对。</p>
-        <a class="btn ghost sm" href="#/integrity" style="margin-top:.8rem">打开数据自检 →</a>
-      </section>
-    </div>
     ${footHTML()}`;
   }
 
@@ -1929,11 +1742,9 @@
     }
     else if (route === "network") { active = "network"; inner = viewNetwork(query); crumb = '<span class="cur">关联网络</span>'; }
     else if (route === "learning-path") { active = "learning-path"; inner = viewLearningPath(query); crumb = '<span class="cur">阅读路径</span>'; }
-    else if (route === "methods") { active = "methods"; inner = viewMethods(); crumb = '<span class="cur">方法与边界</span>'; }
     else if (route === "compare") { active = "compare"; inner = viewCompare(query); crumb = '<span class="cur">理论对比</span>'; }
     else if (route === "path") { active = "path"; inner = viewPath(query); crumb = '<span class="cur">关联路径</span>'; }
     else if (route === "glossary") { active = "glossary"; inner = viewGlossary(); crumb = '<span class="cur">术语索引</span>'; }
-    else if (route === "integrity") { active = "integrity"; inner = viewIntegrity(); crumb = '<span class="cur">数据自检</span>'; }
     else { inner = notFound(); crumb = '<span class="cur">未找到</span>'; }
 
     $root.innerHTML = shellHTML(active, inner, crumb);

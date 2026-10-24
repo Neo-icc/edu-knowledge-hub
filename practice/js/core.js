@@ -12,13 +12,6 @@
   const renames = (A.overrides && A.overrides.renames) || {};
   const doiMap = A.dois || {};
 
-  /* 证据文本是否指向可定位的单篇作品（书名号、英文多词标题、期刊/出版社标记） */
-  function hasWorkTitle(t) {
-    return /《[^》]+》/.test(t) ||
-      /[A-Za-z]{3,}([\s,&-]+[A-Za-z]{2,}){2,}/.test(t) ||
-      /(Journal|Review|Press|学报|期刊|出版社|杂志)/.test(t);
-  }
-
   const entries = (A.roster || []).map((r) => {
     const [id, rawName, en, domain, branch, thinker, year, kind, tagline] = r;
     const name = renames[id] || rawName;
@@ -147,7 +140,6 @@
   /* ---------- 统计 ---------- */
   const stats = {
     entries: entries.length,
-    detailed: entries.filter((e) => e._detail).length,
     terms: uniqueTerms.length,
     links: links.length,
     thinkers: thinkers.length,
@@ -159,18 +151,9 @@
       disagreement: links.filter((l) => l.type === "disagreement").length,
       derivative: links.filter((l) => l.type === "derivative").length,
     },
-    byConfidence: {},
     scenarios: scenarios.length,
     activities: Object.keys(A.activities || {}).length,
-    doiItems: entries.reduce((n, e) => n + e.evidence.filter((x) => x.doi).length, 0),
-    entriesWithDoi: entries.filter((e) => e.evidence.some((x) => x.doi)).length,
-    evidenceItems: entries.reduce((n, e) => n + e.evidence.length, 0),
-    evidenceRefs: entries.reduce((n, e) => n + e.evidence.filter((x) => !x.doi && hasWorkTitle(x.text)).length, 0),
-    evidenceTraces: entries.reduce((n, e) => n + e.evidence.filter((x) => !x.doi && !hasWorkTitle(x.text) && /\d{4}/.test(x.text)).length, 0),
-    evidenceReviews: entries.reduce((n, e) => n + e.evidence.filter((x) => !x.doi && !hasWorkTitle(x.text) && !/\d{4}/.test(x.text)).length, 0),
-    yearRange: [Math.min.apply(null, entries.map((e) => e.year)), Math.max.apply(null, entries.map((e) => e.year))],
   };
-  links.forEach((l) => { stats.byConfidence[l.confidence] = (stats.byConfidence[l.confidence] || 0) + 1; });
 
   /* ---------- 全文检索 ---------- */
   function norm(s) { return String(s == null ? "" : s).toLowerCase(); }
@@ -445,94 +428,12 @@
     return { all, stages, hasCycle: order.length < pool.length };
   }
 
-  /* ---------- 一致性自检 ---------- */
-  function integrity() {
-    const issues = [];
-    const ids = new Set(entries.map((e) => e.id));
-
-    if (droppedLinks) issues.push({ level: "warn", text: "有 " + droppedLinks + " 条关联因 id 缺失或重复被丢弃" });
-
-    entries.forEach((e) => {
-      if (!e._detail) issues.push({ level: "error", text: e.id + " 缺少详解内容", ref: e.id });
-      if (!e.definition || e.definition.length < 20) issues.push({ level: "warn", text: e.id + " 定义过短", ref: e.id });
-      if (!e.terms.length) issues.push({ level: "warn", text: e.id + " 缺少术语卡", ref: e.id });
-      if (degree(e.id) === 0) issues.push({ level: "warn", text: e.id + " 是孤立节点（无任何关联）", ref: e.id });
-      if (!domainById[e.domain]) issues.push({ level: "error", text: e.id + " 的领域 id 无效", ref: e.id });
-      if (!branchById[e.branch]) issues.push({ level: "error", text: e.id + " 的分支 id 无效", ref: e.id });
-      const b = branchById[e.branch];
-      if (b && b.domain !== e.domain) issues.push({ level: "error", text: e.id + " 的分支与领域不匹配", ref: e.id });
-    });
-
-    /* 计数一致性：同一数字在所有位置必须相同 */
-    const countByDomain = {};
-    domains.forEach((d) => { countByDomain[d.id] = entries.filter((e) => e.domain === d.id).length; });
-    domains.forEach((d) => {
-      const sum = d.branches.reduce((n, b) => n + (entriesOfBranch[b.id] || []).length, 0);
-      if (sum !== countByDomain[d.id]) {
-        issues.push({ level: "error", text: d.name + " 分支计数之和 " + sum + " ≠ 领域条目数 " + countByDomain[d.id] });
-      }
-    });
-
-    const linkedPairs = new Set();
-    links.forEach((l) => linkedPairs.add(l.a + "|" + l.b));
-    let multiTypePairs = 0;
-    const pairTypes = {};
-    links.forEach((l) => {
-      const k = [l.a, l.b].sort().join("|");
-      pairTypes[k] = pairTypes[k] || new Set();
-      pairTypes[k].add(l.type);
-    });
-    Object.keys(pairTypes).forEach((k) => { if (pairTypes[k].size > 1) multiTypePairs += 1; });
-
-    const noSource = entries.filter((e) => !e.evidence.length);
-    if (noSource.length) issues.push({ level: "warn", text: noSource.length + " 条缺少实证来源" });
-
-    /* 场景与课堂活动 */
-    const scIds = new Set();
-    scenarios.forEach((s) => {
-      if (scIds.has(s.id)) issues.push({ level: "error", text: "场景 id 重复：" + s.id });
-      scIds.add(s.id);
-      (s.links || []).forEach((id) => {
-        if (!byId[id]) issues.push({ level: "error", text: s.id + " 关联了不存在的条目 " + id });
-      });
-      if (!s.audience || !s.audience.length) issues.push({ level: "warn", text: s.id + " 未标注适用身份" });
-      if (!s.evidence || !A.confidences[s.evidence]) issues.push({ level: "warn", text: s.id + " 证据等级无效：" + (s.evidence || "空") });
-      if (!s.do || !s.do.length) issues.push({ level: "warn", text: s.id + " 缺少「可以试」" });
-      if (!s.dont || !s.dont.length) issues.push({ level: "warn", text: s.id + " 缺少「先别做」" });
-    });
-    Object.keys(activities).forEach((id) => {
-      if (!scenarioById[id]) issues.push({ level: "error", text: "课堂活动指向不存在的场景：" + id });
-    });
-
-    /* 分诊覆盖 */
-    const covered = new Set();
-    (triage.concerns || []).forEach((c) => {
-      (c.scenarios || []).forEach((id) => {
-        if (!scenarioById[id]) issues.push({ level: "error", text: "分诊项「" + c.name + "」指向不存在的场景 " + id });
-        covered.add(id);
-      });
-      if (!c.scenarios || !c.scenarios.length) issues.push({ level: "warn", text: "分诊项「" + c.name + "」没有任何情境" });
-    });
-    scenarios.forEach((s) => {
-      if (!covered.has(s.id)) issues.push({ level: "warn", text: s.id + " 未纳入任何分诊项" });
-    });
-
-    return {
-      issues,
-      errors: issues.filter((i) => i.level === "error").length,
-      warnings: issues.filter((i) => i.level === "warn").length,
-      countByDomain,
-      multiTypePairs,
-      linkedPairs: linkedPairs.size,
-    };
-  }
-
   /* ---------- 导出 ---------- */
   A.store = {
     entries, byId, links, adj, degree, domains, domainById, branchById, branchesOf, entriesOfBranch,
     thinkers, thinkerMap, thinkerName, thinkerEn, terms: uniqueTerms, stats,
     scenarios, scenarioById, scenariosOfEntry, activities, triage,
-    search, neighbors, shortestPath, pathLinks, sharedBetween, compare, topologicalDerivatives, learningPath, integrity,
+    search, neighbors, shortestPath, pathLinks, sharedBetween, compare, topologicalDerivatives, learningPath,
     droppedLinks,
   };
 })();
