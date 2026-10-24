@@ -61,6 +61,10 @@ ATLAS.roster = (ATLAS.roster || []).concat([
 ["E463","青少年抑郁","Adolescent Depression","dev","emotion-social","thapar",2012,"construct","青少年抑郁由遗传易感与应激环境交互驱动，核心为持续低落／易怒与兴趣丧失，共病率高。"],
 ["E464","非自杀性自伤","Non-Suicidal Self-Injury","dev","emotion-social","nock",2010,"construct","不以死亡为目的的自我伤害，核心功能是缓解难以承受的负性情绪，并显著增加未来自杀风险。"],
 ["E465","拒学行为","School Refusal Behavior","dev","emotion-social","kearney",2008,"construct","拒学多由焦虑与回避驱动，依功能分为回避负性情绪、逃避评价／社交、寻求关注与获得奖励四类。"],
+["E466","选择性缄默","Selective Mutism","dev","emotion-social","viana",2009,"construct","儿童在学校等情境持续不说话、在家却能说，属社交焦虑谱系而非言语障碍。"],
+["E467","抽动障碍与妥瑞氏","Tic Disorders and Tourette Syndrome","dev","special","bloch",2009,"construct","抽动是快速重复的运动或发声，童年起病、青春期达峰、成年多减轻，常与 ADHD 共病。"],
+["E468","儿童与青少年的性教育","Sexuality Education for Children and Adolescents","dev","psycho-social","breuner",2016,"practice","发展适宜、循证的性教育能降低意外怀孕与性传播感染风险，且不增加性行为。"],
+["E469","儿童上网的风险与伤害","Online Risks and Harms for Children","dev","family","livingstone",2014,"construct","儿童上网的风险不等于伤害，伤害取决于脆弱性、媒介素养与支持系统。"],
 ]);
 
 /* ────────────────────────── 详解 ────────────────────────── */
@@ -1832,6 +1836,142 @@ ATLAS.details = Object.assign(ATLAS.details || {}, {
       { t: "功能分析", en: "Functional Analysis", d: "识别行为由何种后果维持的评估方法。" },
       { t: "渐进暴露", en: "Graduated Exposure", d: "从低到高逐步接近恐惧情境以消退回避。" },
       { t: "躯体化", en: "Somatization", d: "心理困扰以身体不适的形式表现。" }
+    ]
+  },
+  E466: {
+    definition: "选择性缄默指儿童在预期被要求说话的特定情境（如学校、陌生场合）持续无法发声，而在其他情境（如家中）却能正常说话。Viana 等（2009）综述指出，其本质是社交焦虑谱系的表现，而非言语能力缺陷或单纯倔强；核心困难是「在特定社会情境中发声」，而非「不会说话」。",
+    claims: [
+      "选择性缄默是情境特异的不说话：学校不说、家里说。",
+      "其本质更接近社交焦虑，而非言语或发音障碍。",
+      "常与社交焦虑、害羞、分离焦虑共病。",
+      "不是「故意不说话」，而是焦虑抑制了发声。",
+      "早期行为与认知干预可改善，拖延会固化回避。"
+    ],
+    agreements: [
+      "缄默是焦虑驱动而非言语缺陷。",
+      "早期识别与干预优于等待自发缓解。",
+      "家庭与学校的一致配合是干预关键。"
+    ],
+    disagreements: [
+      { topic: "缄默是否只是害羞的极端", sides: [ { who: "viana", view: "缄默与社交焦虑共享机制，但作为独立表现值得专门识别" }, { who: "批评者", view: "缄默可能是害羞谱系的极端，单列诊断价值有限" } ], stake: "是否需专门评估与干预" },
+      { topic: "干预重点是减焦虑还是促发声", sides: [ { who: "viana", view: "先降低情境焦虑，再渐进塑造发声行为" }, { who: "行为派", view: "直接强化发声行为更有效" } ], stake: "干预先处理情绪还是先塑造行为" }
+    ],
+    evidence: [
+      { text: "Viana, Beidel & Rabian, Selective mutism: A review and integration of the last 15 years（2009）", doi: "10.1016/j.cpr.2008.09.009" }
+    ],
+    applications: [
+      "不强迫孩子当众说话，先降低情境威胁。",
+      "用非言语方式（点头、写字、图画）逐步沟通。",
+      "学校与家庭一致，逐步从一对一低威胁情境扩展。",
+      "持续超过一个月且影响参与，转介儿童心理专业人员。"
+    ],
+    terms: [
+      { t: "选择性缄默", en: "Selective Mutism", d: "在特定社会情境中持续不说话、其他情境正常的现象。" },
+      { t: "社交焦虑", en: "Social Anxiety", d: "对被评价或社交情境的显著恐惧与回避。" },
+      { t: "情境特异", en: "Situational Specificity", d: "行为随环境与对象不同而改变。" },
+      { t: "渐进塑造", en: "Shaping", d: "通过逐级强化接近目标行为。" }
+    ]
+  },
+  E467: {
+    definition: "抽动是快速、重复、非节律的运动或发声（如眨眼、清嗓子、耸肩）。妥瑞氏综合征要求多运动抽动加至少一种发声抽动、持续一年以上。Bloch 与 Leckman（2009）综述指出，抽动常在 5—7 岁起病、10—12 岁最严重、青春期后多数减轻，且常与 ADHD、强迫症共病。",
+    claims: [
+      "抽动是神经发育性运动障碍，非「坏习惯」或「缺管教」。",
+      "多在童年起病，青春期前后达到高峰。",
+      "多数人在成年后抽动显著减轻。",
+      "常与 ADHD、强迫、焦虑共病。",
+      "多数无需药物，行为干预（习惯逆转）与教育支持有效。"
+    ],
+    agreements: [
+      "抽动是神经发育问题，不能靠意志强行压制。",
+      "紧张与疲劳会加重抽动，放松与专注可减轻。",
+      "多数抽动有自限性，预后良好。"
+    ],
+    disagreements: [
+      { topic: "抽动是否应一律治疗", sides: [ { who: "bloch", view: "轻症以教育与观察为主，功能损害才干预" }, { who: "激进派", view: "早期干预可减少共病与社交代价" } ], stake: "干预阈值的高低" },
+      { topic: "药物与行为干预的优先", sides: [ { who: "行为派", view: "习惯逆转等行为干预应作为一线" }, { who: "药物派", view: "重症需药物控制" } ], stake: "一线方案选择" }
+    ],
+    evidence: [
+      { text: "Bloch & Leckman, Clinical course of Tourette syndrome（2009）", doi: "10.1016/j.jpsychores.2009.09.002" }
+    ],
+    applications: [
+      "不要批评或要求孩子「别抽了」，越关注越加重。",
+      "与老师沟通，避免当众纠正或嘲笑。",
+      "记录抽动与情境（紧张、疲劳、兴奋）的关系。",
+      "影响学习社交或伴随共病时，转介儿童神经科或精神科。"
+    ],
+    terms: [
+      { t: "抽动", en: "Tic", d: "快速、重复、非节律的运动或发声。" },
+      { t: "妥瑞氏综合征", en: "Tourette Syndrome", d: "多运动抽动加至少一种发声抽动、持续一年以上。" },
+      { t: "习惯逆转", en: "Habit Reversal", d: "觉察抽动前兆并用竞争反应替代的行为干预。" },
+      { t: "共病", en: "Comorbidity", d: "抽动常与 ADHD、强迫等同时出现。" }
+    ]
+  },
+  E468: {
+    definition: "性教育是发展适宜、循证的人类性知识教育，涵盖身体、生殖、关系、安全、同意与健康决策。Breuner 与 Mattson（2016）的美国儿科学会临床报告指出，由家长、学校与专业人员提供的循证性教育，能降低青少年意外怀孕与性传播感染风险，且不增加性行为。",
+    claims: [
+      "循证性教育能降低意外怀孕与性传播感染风险。",
+      "性教育并不增加性行为，反而推迟首次性行为并促进安全行为。",
+      "应从小、按发展水平持续进行，而非一次「谈话」。",
+      "身体自主、边界与同意是性教育的基础内容。",
+      "父母是性教育的重要来源，坦诚与可及比「完美措辞」更重要。"
+    ],
+    agreements: [
+      "性教育是生命教育与安全教育的一部分。",
+      "开放、坦诚的亲子沟通优于回避与神秘化。",
+      "禁欲式教育效果有限，需兼顾安全与责任。"
+    ],
+    disagreements: [
+      { topic: "性教育的内容与时机", sides: [ { who: "breuner", view: "发展适宜、由浅入深、从小开始" }, { who: "保守派", view: "过早讲授可能诱发过早性行为" } ], stake: "起始年龄与内容边界" },
+      { topic: "家庭与学校谁主导", sides: [ { who: "breuner", view: "家庭、学校、医生多方协作" }, { who: "家庭本位派", view: "性教育应以家庭为主，学校不应越界" } ], stake: "教育责任的分配" }
+    ],
+    evidence: [
+      { text: "Breuner & Mattson, Sexuality education for children and adolescents（2016）", doi: "10.1542/peds.2016-1348" }
+    ],
+    applications: [
+      "用孩子能懂的语言如实回答「我从哪来」等问题。",
+      "从身体部位名称、隐私与同意开始，而非只讲性行为。",
+      "把性教育日常化，而非一次严肃「谈话」。",
+      "青春期前由同性别家长或信任成人介绍身体变化。"
+    ],
+    terms: [
+      { t: "性教育", en: "Sexuality Education", d: "关于性、身体、关系与安全的发展适宜教育。" },
+      { t: "身体自主", en: "Bodily Autonomy", d: "个体对自己身体的自主权与边界。" },
+      { t: "同意", en: "Consent", d: "在知情、自愿、可撤回前提下的同意。" },
+      { t: "发展适宜", en: "Developmentally Appropriate", d: "内容与方式匹配儿童认知与发育水平。" }
+    ]
+  },
+  E469: {
+    definition: "儿童上网既带来机会也带来风险，风险可分为内容、接触与行为三类。Livingstone 与 Smith（2014）综述指出，「风险」不等于「伤害」——多数儿童接触风险后并未受实质伤害，伤害取决于儿童的脆弱性、数字素养与来自家庭的支持，简单禁止或监控效果有限。",
+    claims: [
+      "网络风险分内容、接触、行为三类，性质不同。",
+      "风险不等于伤害：接触风险不必然导致受害。",
+      "脆弱性（年龄、情绪、家庭支持）比接触本身更能预测伤害。",
+      "开放式亲子沟通与数字素养是保护因素。",
+      "单纯监控或禁用效果有限，甚至让儿童更隐蔽地上网。"
+    ],
+    agreements: [
+      "风险与机会并存，不宜因噎废食。",
+      "数字素养与支持性沟通能降低伤害。",
+      "年幼与脆弱儿童需要更多保护。"
+    ],
+    disagreements: [
+      { topic: "风险与伤害的关系", sides: [ { who: "livingstone", view: "风险与伤害分离，多数风险可被韧性缓冲" }, { who: "警惕派", view: "接触即潜在伤害，应最小化一切风险" } ], stake: "政策是防范风险还是提升韧性" },
+      { topic: "监控与信任的平衡", sides: [ { who: "livingstone", view: "开放式沟通优于技术监控" }, { who: "监控派", view: "过滤与监控是必要保护" } ], stake: "家长数字教养方式的选择" }
+    ],
+    evidence: [
+      { text: "Livingstone & Smith, Annual research review: Harms experienced by child users of online and mobile technologies（2014）", doi: "10.1111/jcpp.12197" }
+    ],
+    applications: [
+      "区分「接触了风险」与「受到了伤害」，不一律恐慌。",
+      "建立开放式沟通，让孩子遇到不适内容愿意告诉你。",
+      "一起讨论网络内容，而非只靠过滤与监控。",
+      "对年幼或脆弱儿童提供更明确的边界与陪伴。"
+    ],
+    terms: [
+      { t: "网络风险", en: "Online Risk", d: "儿童上网可能遇到的危险情境。" },
+      { t: "数字素养", en: "Digital Literacy", d: "安全、批判地使用数字媒体的能力。" },
+      { t: "韧性", en: "Resilience", d: "面对风险不必然受害的应对与恢复能力。" },
+      { t: "内容、接触、行为风险", en: "Content, Contact, Conduct Risks", d: "网络风险的三种类型：接收不良内容、遭遇不良接触、自身参与不良行为。" }
     ]
   }
 });

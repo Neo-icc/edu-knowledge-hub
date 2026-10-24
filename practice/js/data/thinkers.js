@@ -98,7 +98,8 @@ ATLAS.scholars = {
   gogtay: ["戈格泰", "Nitin Gogtay"], bengtsson: ["本特松", "Sara Bengtsson"], kramer: ["克雷默", "Arthur Kramer"],
   skaarland: ["斯卡尔兰", "Sandra Skaaland"], snook: ["斯努克", "Rod Snook"],
   dewey_j: ["杜威", "John Dewey"], bagley_w: ["巴格莱", "William Bagley"],
-  nock: ["诺克", "Matthew K. Nock"], thapar: ["塔帕尔", "Anita Thapar"], kearney: ["卡尼", "Christopher A. Kearney"]
+  nock: ["诺克", "Matthew K. Nock"], thapar: ["塔帕尔", "Anita Thapar"], kearney: ["卡尼", "Christopher A. Kearney"],
+  viana: ["维亚纳", "Andres G. Viana"], bloch: ["布洛赫", "Michael H. Bloch"], breuner: ["布鲁纳（儿科）", "Cora C. Breuner"], livingstone: ["利文斯通", "Sonia Livingstone"]
 };
 
 ATLAS.thinkerMeta = {
@@ -172,5 +173,6 @@ ATLAS.thinkerMeta = {
   feigenson: [1971, null, "美国"], lyons: [1980, null, "美国"], geary: [1950, null, "美国"],
   butterworth: [1944, null, "英国"], uttal: [1960, null, "美国"], casey: [1956, null, "美国"],
   newport: [1957, null, "美国"], sorrells: [1980, null, "美国"], rasch_born: [1975, null, "瑞士"],
-  nock: [null, null, "美国"], thapar: [null, null, "英国"], kearney: [null, null, "美国"]
+  nock: [null, null, "美国"], thapar: [null, null, "英国"], kearney: [null, null, "美国"],
+  viana: [null, null, "美国"], bloch: [null, null, "美国"], breuner: [null, null, "美国"], livingstone: [null, null, "英国"]
 };
