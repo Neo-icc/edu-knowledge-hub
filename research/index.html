@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3378,14 +3378,14 @@ document.addEventListener("keydown", e=>{
 
 /* ============ 主题（自动跟随时间 + 手动记忆） ============ */
 /* 三种模式：auto（跟随设备时间，白天浅色 / 夜间深色）、light、dark。
-   默认 auto；手动切换后记忆偏好。 */
+   默认 light；手动切换后记忆偏好。 */
 const DAY_HOUR = 6, NIGHT_HOUR = 18;   // 06:00–18:00 视为白天
 function autoTheme(){
   const h = new Date().getHours();
   return (h >= DAY_HOUR && h < NIGHT_HOUR) ? "light" : "dark";
 }
-let themeMode = "auto";
-try{ themeMode = localStorage.getItem("edu-nav-theme") || "auto"; }catch(e){}
+let themeMode = "light";
+try{ themeMode = localStorage.getItem("edu-nav-theme") || "light"; }catch(e){}
 let themeAnimTimer = 0;
 function applyTheme(mode, animate){
   themeMode = mode;

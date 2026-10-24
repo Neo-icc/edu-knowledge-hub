@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,13 +8,11 @@
   <meta name="color-scheme" content="light dark" />
 
   <script>
-    // 首屏即确定主题，避免闪烁；用户显式选择优先，其次跟随系统
+    // 首屏即确定主题，避免闪烁；用户显式选择优先，默认浅色
     (function () {
       var stored = null;
       try { stored = localStorage.getItem("atlas-theme"); } catch (e) {}
-      var t = stored === "dark" || stored === "light"
-        ? stored
-        : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      var t = stored === "dark" || stored === "light" ? stored : "light";
       document.documentElement.setAttribute("data-theme", t);
     })();
   </script>
@@ -33,7 +31,7 @@
   </noscript>
 
   <link rel="stylesheet" href="css/fonts.css?v=47" />
-  <link rel="stylesheet" href="css/styles.css?v=47" />
+  <link rel="stylesheet" href="css/styles.css?v=48" />
 </head>
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
