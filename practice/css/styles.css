@@ -1886,6 +1886,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
 }
 .sc-esc {
   display: flex;
+  align-items: flex-start;
   gap: var(--s3);
   padding: var(--s2) var(--s3);
   background: var(--warn-bg);
@@ -2011,7 +2012,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   border-radius: var(--r2);
   padding: var(--s3) var(--s4);
 }
-.sheet-esc h2 { border-bottom: none; color: var(--warn); margin-bottom: 0.3rem; }
+.sheet-esc h2 { border-bottom: none; color: var(--warn); margin-bottom: 0.3rem; padding-bottom: 0; }
 .sheet-refs { list-style: none; }
 .sheet-refs li {
   font-size: 0.82rem;
