@@ -537,7 +537,7 @@
 
     (doc.sections || []).forEach((sec) => {
       fill(sec.h, pad, 16, COL.accent, sans, "bold");
-      y += 28;
+      y += 24;
       if (sec.p) {
         ctx.font = "14px " + sans;
         wrapText(ctx, sec.p, contentW).forEach((ln) => { fill(ln, pad, 14, COL.ink, sans); y += 26; });

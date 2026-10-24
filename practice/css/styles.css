@@ -1834,7 +1834,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   margin-top: 0;
   padding-top: var(--s3);
 }
-.sc-row { display: flex; gap: var(--s3); margin-bottom: var(--s3); }
+.sc-row { display: flex; align-items: flex-start; gap: var(--s3); margin-bottom: var(--s3); }
 .sc-k {
   flex: 0 0 88px;
   font-family: var(--mono);
@@ -1964,7 +1964,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   color: var(--ink-4);
   padding-bottom: 0.3rem;
   border-bottom: 1px solid var(--rule);
-  margin-bottom: var(--s3);
+  margin-bottom: var(--s2);
 }
 .sheet-sec p { font-size: 0.94rem; line-height: 1.82; color: var(--ink-2); }
 .sheet-do { padding-left: 1.4rem; list-style: decimal; }
