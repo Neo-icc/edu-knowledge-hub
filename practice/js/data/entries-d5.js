@@ -556,4 +556,3 @@ E232: {
   terms: [{ t: "解释层级", en: "levels of explanation", d: "从分子到行为到社会的不同描述层" }, { t: "教育神经科学", en: "educational neuroscience", d: "连接脑机制与教育实践的研究领域" }, { t: "中介变量", en: "mediating variable", d: "连接机制与结果的中间过程" }, { t: "双向协作", en: "bidirectional collaboration", d: "研究者与实践者共同定义问题" }]
 }
 });
-

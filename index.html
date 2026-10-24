@@ -258,10 +258,6 @@
 
   function render() {
     var next = identFromHash();
-    // 传给 practice 子应用的身份（edu-psych 无身份概念，忽略）
-    try {
-      if (next === "educator") localStorage.setItem("atlas-audience", "educator");
-    } catch (e) {}
 
     var isLanding = next === "landing";
     landing.hidden = !isLanding;

@@ -382,8 +382,13 @@ ul.ls li::before{content:"—";position:absolute;left:0;color:var(--fg3)}
   width:62px;height:62px;flex:0 0 62px;position:relative;border-radius:50%;
   background:var(--bg3);border:1px solid var(--line);overflow:hidden;
 }
-.thphbox .thph{width:100%;height:100%;object-fit:cover;display:block}
-.thph-icon{width:56%;height:56%;color:var(--fg3);opacity:.55}
+/* 兜底图标：绝对定位居中垫底；照片浮在上层（relative）加载后完全盖住图标，
+   加载失败 onerror 隐藏照片后图标自然露出 */
+.thph-icon{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:56%;height:56%;color:var(--fg3);opacity:.55;
+}
+.thphbox .thph{position:relative;width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block}
 .thph-miss{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--serif);font-size:16px;color:var(--fg3);
@@ -395,6 +400,7 @@ ul.ls li::before{content:"—";position:absolute;left:0;color:var(--fg3)}
 }
 .thphbox.duo .thph:first-child{left:0;top:0}
 .thphbox.duo .thph:last-child{right:0;bottom:0}
+.thphbox.duo .thph-icon{display:none}
 .thintro{
   font-size:13.5px;color:var(--fg2);margin-top:7px;line-height:1.7;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
@@ -542,7 +548,18 @@ ul.ls li::before{content:"—";position:absolute;left:0;color:var(--fg3)}
 .sp-btn:hover{border-color:var(--accent);color:var(--accent)}
 .sp-qrwrap{margin-top:14px;text-align:center}
 .sp-qrwrap svg{width:180px;height:180px;border-radius:6px;display:inline-block}
+.sp-qr-long svg{display:none}
+.sp-qr-long::before{
+  content:"链接过长，无法生成二维码（请用复制链接分享）";
+  display:block;font-size:12.5px;color:var(--fg3);padding:8px 0;
+}
 .sp-tip{font-size:11.5px;color:var(--fg3);margin-top:8px;line-height:1.7}
+.sp-qrlink{margin-top:10px;text-align:center}
+.sp-linkbtn{
+  background:none;border:none;font-size:12px;color:var(--fg3);cursor:pointer;
+  text-decoration:underline;padding:2px 6px;font-family:var(--sans);
+}
+.sp-linkbtn:hover{color:var(--fg)}
 #sharetoast{
   position:fixed;left:50%;bottom:46px;transform:translateX(-50%) translateY(10px);z-index:90;
   background:var(--bg3);color:var(--fg);border:1px solid var(--line);border-radius:999px;
@@ -701,9 +718,11 @@ let ENTRIES = [];
 let REFS = {};
 let VISUALS = {};
 let ENTRIES_READY = false;
-/* 人物照片（Wikimedia Commons 官方肖像，128px base64）与简介，随 chunk 懒加载 */
+/* 人物照片（Wikimedia Commons 官方肖像 128px + 百度百科条目配图）与简介，
+   随 data-thinkers.js 懒加载，进入人物页前以剪影图标兜底 */
 let THINKER_PHOTOS = {};
 let THINKER_INTROS = {};
+let PHOTOS_READY = false;
 /* D 板块「立场汇总页」：每条是从多篇详解抽出的跨理论结论，附说明与关联详解，不重复写详解 */
 const STANCE_ITEMS = (DATA.stance && DATA.stance.items) || [];
 const STANCE_BY_TEXT = new Map(STANCE_ITEMS.map(x => [x.text, x]));
@@ -782,8 +801,6 @@ function ensureEntries(){
         ENTRIES = c.entries || [];
         REFS = c.refs || {};
         VISUALS = c.visuals || {};
-        THINKER_PHOTOS = c.thinkerPhotos || {};
-        THINKER_INTROS = c.thinkerIntros || {};
         ENTRIES_READY = true;
         window.__entriesReady = true;
         buildEntryIndexes();
@@ -791,11 +808,49 @@ function ensureEntries(){
         markNavEntries();
         entriesWaiters.forEach(fn=>fn());
         entriesWaiters.length = 0;
+        /* 条目数据到位后，空闲时预取人物照片：用户点「人物」秒开（后台传输不阻塞交互） */
+        setTimeout(()=>{ if(!PHOTOS_READY && !document.hidden) ensurePhotos(); }, 3000);
       };
       s.onerror = ()=>{
         console.warn("[edu-nav] 条目数据加载失败：条目详情与全站搜索暂不可用（核心浏览不受影响）");
         entriesWaiters.forEach(fn=>fn());
         entriesWaiters.length = 0;
+      };
+      document.head.appendChild(s);
+    }
+  });
+}
+/* ---- P3 人物照片懒加载：只在进入「人物」视图时按需拉取（~200KB），
+   避免所有访客为头像下载无关数据；加载完成自动重绘当前人物视图 ---- */
+const photoWaiters = [];
+function ensurePhotos(){
+  if(PHOTOS_READY) return Promise.resolve();
+  return new Promise(res=>{
+    photoWaiters.push(res);
+    if(!window.__eduThinkersLoading){
+      window.__eduThinkersLoading = true;
+      const s = document.createElement("script");
+      s.src = "data-thinkers.js" + (location.search || "");
+      s.onload = ()=>{
+        const c = window.__EDU_THINKERS__ || {};
+        THINKER_PHOTOS = c.thinkerPhotos || {};
+        THINKER_INTROS = c.thinkerIntros || {};
+        PHOTOS_READY = true;
+        photoWaiters.forEach(fn=>fn());
+        photoWaiters.length = 0;
+        /* 人物视图若已渲染（无论当前是否切到该视图），立刻用真实照片重绘 */
+        const vTh = $("#v-thinkers");
+        const hasCards = !!vTh.querySelector(".thcard");
+        if(vTh.classList.contains("on") || hasCards){
+          const h = location.hash || "";
+          if(h.indexOf("#thinker/") === 0) showThinker(h.slice("#thinker/".length), false);
+          else renderThinkers();
+        }
+      };
+      s.onerror = ()=>{
+        console.warn("[edu-nav] 人物照片加载失败：以剪影图标兜底显示");
+        photoWaiters.forEach(fn=>fn());
+        photoWaiters.length = 0;
       };
       document.head.appendChild(s);
     }
@@ -1881,7 +1936,9 @@ function showTlTip(cl, e){
 
 /* ============ 人物索引 ============ */
 function renderThinkers(){
-  if(!ENTRIES_READY){ ensureEntries().then(()=> renderThinkers()); return; }
+  /* 人物页依赖的数据（人物/观点/连线）已内联在首页，无需 1.4MB 条目 chunk；
+     照片未到位先渲染剪影图标，数据到达后由 ensurePhotos 自动重绘本视图 */
+  if(!PHOTOS_READY) ensurePhotos();
   const rows = [...THINKERS].sort((a,b)=> (a.birth||9999)-(b.birth||9999));
   const withE = rows.filter(t=>t.entry).length;
   let h = `<h2 class="vt">人物索引</h2>
@@ -1925,8 +1982,11 @@ function renderThinkers(){
 function thinkerPhotoHtml(tid, cls){
   const t = THINKERS.find(x=>x.id===tid);
   const ph = THINKER_PHOTOS[tid];
-  const duo = ph && typeof ph === "object";
-  const srcs = duo ? [ph.a, ph.b].filter(Boolean) : (typeof ph === "string" ? [ph] : []);
+  /* 双人组合仅在两张照片都存在时用双圆布局；只有一张时按单人整圆显示 */
+  const duo = ph && typeof ph === "object" && !!ph.a && !!ph.b;
+  const srcs = duo ? [ph.a, ph.b]
+    : (typeof ph === "string" && ph ? [ph]
+       : (ph && typeof ph === "object" ? [ph.a || ph.b].filter(Boolean) : []));
   if(srcs.length){
     return `<div class="thphbox ${esc(cls||"")}${duo?" duo":""}">
       <svg class="thph-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -1938,7 +1998,8 @@ function thinkerPhotoHtml(tid, cls){
   </div>`;
 }
 function showThinker(tid, push=true){
-  if(!ENTRIES_READY){ ensureEntries().then(()=> showThinker(tid, push)); return; }
+  /* 人物详情数据全部内联；照片未到位先渲染剪影，到位后由 ensurePhotos 自动重绘 */
+  if(!PHOTOS_READY) ensurePhotos();
   const t = THINKERS.find(x=>x.id===tid);
   if(!t) return;
   /* 人物详情渲染在「人物」视图里（原写在「理论条目」容器，导致顶部标签高亮错位） */
@@ -2930,7 +2991,8 @@ function qrEncode(text, fixedMask){
     for(const ch of text){ const c=ch.codePointAt(0);
       n += c<0x80?1 : c<0x800?2 : 3; } return n; })();
   for(let i = 1; i <= 10; i++){ if(byteLen <= CAP[i]){ v = i; break; } }
-  if(byteLen > CAP[10]) text = text.slice(0, Math.floor(CAP[10]/3)); // 兜底截断
+  /* 超容量拒绝生成：截断会让二维码指向错误地址，调用方须给出降级提示 */
+  if(byteLen > CAP[10]) return null;
   const size = 17 + 4*v;
   const blocks = BLOCKS[v];
   const totalData = blocks.reduce((s,b)=> s+b[1], 0);
@@ -3179,12 +3241,20 @@ function toast(msg){
   clearTimeout(toast._tm);
   toast._tm = setTimeout(()=> t.classList.remove("on"), 2200);
 }
-/* 二维码 SVG 渲染（白色底 + 静区，保证任何主题下可扫） */
+/* 二维码 SVG 渲染（白色底 + 静区，保证任何主题下可扫）。
+   超容量时拒绝截断——截断会生成指向错误地址的二维码，宁可不显示 */
 function renderShareQR(url){
   const wrap = $("#sp-qrwrap");
   const svg = $("#sp-qr");
   if(!wrap || !svg) return;
   const r = qrEncode(url);
+  if(!r || !r.matrix){
+    svg.innerHTML = "";
+    wrap.hidden = false;
+    wrap.classList.add("sp-qr-long");
+    return;
+  }
+  wrap.classList.remove("sp-qr-long");
   const q = 4, cell = 4;                 // 静区 4 模块 / 每模块 4px
   const N = (r.size + q*2) * cell;
   const parts = [`<rect width="${N}" height="${N}" fill="#fff"/>`];
@@ -3197,6 +3267,8 @@ function renderShareQR(url){
 }
 function openSharePanel(){
   let p = $("#sharepop");
+  /* 已打开时再点分享按钮 → 切换关闭 */
+  if(p && p.classList.contains("on")){ p.classList.remove("on"); return; }
   if(!p){
     p = document.createElement("div");
     p.id = "sharepop";
@@ -3209,30 +3281,69 @@ function openSharePanel(){
       <div class="sp-qrwrap" id="sp-qrwrap" hidden>
         <svg id="sp-qr" role="img" aria-label="当前页面二维码"></svg>
         <p class="sp-tip">用手机「扫一扫」打开并分享<br>（或复制链接粘贴到聊天中）</p>
+      </div>
+      <div class="sp-qrlink" id="sp-qrlink" hidden>
+        <button class="sp-linkbtn" id="sp-qrlinkbtn">微信没有响应？显示二维码（备用）</button>
       </div>`;
     document.body.appendChild(p);
     $("#sp-close").onclick = ()=> p.classList.remove("on");
     p.addEventListener("click", e=>{
       const act = e.target.closest(".sp-btn")?.dataset.act;
-      if(!act) return;
       const url = location.href;
-      if(act === "copy"){ copyText(url); toast("链接已复制，粘贴到任意聊天即可分享"); }
-      else if(act === "wechat"){ copyText(url); renderShareQR(url); toast("二维码已生成；链接也已复制"); }
-      else if(act === "dingtalk"){ copyText(url); toast("链接已复制，打开钉钉粘贴发送即可"); }
+      if(act === "copy"){
+        copyText(url); toast("链接已复制，粘贴到任意聊天即可分享");
+      } else if(act === "wechat"){
+        /* 电脑端直达：唤起本机微信 + 复制链接（粘贴即发）；二维码仅作备用，不再强制扫码 */
+        copyText(url);
+        tryDeepLink("weixin://");
+        toast("已复制链接并尝试唤起微信，在聊天中粘贴即可发送");
+        const ql = $("#sp-qrlink");
+        if(ql) ql.hidden = false;
+      } else if(act === "dingtalk"){
+        /* 钉钉官方深链：直接把链接带进钉钉内打开，选会话即可转发，无需扫码 */
+        copyText(url);
+        tryDeepLink("dingtalk://dingtalkclient/page/link?url=" + encodeURIComponent(url) + "&pc_slide=true");
+        toast("已复制链接并尝试唤起钉钉，选择会话发送即可");
+      } else if(e.target.id === "sp-qrlinkbtn"){
+        renderShareQR(url);
+        toast("已生成二维码（备用）");
+      }
     });
   }
   p.classList.add("on");
   const wrap = $("#sp-qrwrap");
-  if(wrap) wrap.hidden = true;
-  if(!p.dataset.qrReady){
-    p.dataset.qrReady = "1";
-  }
+  if(wrap){ wrap.hidden = true; wrap.classList.remove("sp-qr-long"); }
+  const ql = $("#sp-qrlink");
+  if(ql) ql.hidden = true;
 }
 $("#sharebtn").onclick = async ()=>{
+  /* 手机端判定：粗指针 +（窄视口或移动 UA）。触屏笔记本（宽视口、桌面 UA）不算手机，
+     走分享面板——否则 Edge 在 Windows 上会弹系统分享而非面板，违背双端预期 */
+  const coarse = matchMedia("(pointer: coarse)").matches;
+  const mobile = coarse && (matchMedia("(max-width: 820px)").matches
+    || /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent));
+  const ua = navigator.userAgent;
   const url = location.href;
-  const coarse = matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+  /* 微信内置浏览器：走 JSSDK 桥直接唤起「发送给朋友」，无需扫码、无需复制 */
+  if(mobile && /MicroMessenger/i.test(ua) && window.WeixinJSBridge){
+    copyText(url);
+    try{
+      WeixinJSBridge.invoke("sendAppMessage",
+        { title: document.title, desc: "教育学 · 心理学 · 脑科学 · 儿童成长 知识全景导航",
+          link: url, img_url: "" }, ()=>{});
+    }catch(e){}
+    toast("已复制链接；若未弹出选择框，点右上角「···」发送给朋友");
+    return;
+  }
+  /* 钉钉内置浏览器：深链把页面带进钉钉内打开，右上角一键转发 */
+  if(mobile && /DingTalk/i.test(ua)){
+    copyText(url);
+    tryDeepLink("dingtalk://dingtalkclient/page/link?url=" + encodeURIComponent(url));
+    toast("已复制链接并已在钉钉内打开，点右上角「转发」发送即可");
+    return;
+  }
   /* 手机端优先系统分享面板：原生支持微信/钉钉/更多，且需 HTTPS（双渠道均为 https） */
-  if(coarse && navigator.share){
+  if(mobile && navigator.share){
     try{
       await navigator.share({ title: "教育学 · 心理学 · 脑科学 · 儿童成长 知识全景导航",
         text: document.title, url });
@@ -3244,6 +3355,16 @@ $("#sharebtn").onclick = async ()=>{
   }
   openSharePanel();
 };
+/* 深链唤起本机应用：用隐藏 iframe 尝试协议跳转，页面自身不导航、不白屏 */
+function tryDeepLink(scheme){
+  try{
+    const f = document.createElement("iframe");
+    f.style.display = "none";
+    f.src = scheme;
+    document.body.appendChild(f);
+    setTimeout(()=>{ if(f.parentNode) f.parentNode.removeChild(f); }, 1200);
+  }catch(e){}
+}
 /* 点击面板外或按 Esc 关闭 */
 document.addEventListener("click", e=>{
   const p = $("#sharepop");
@@ -3345,8 +3466,19 @@ window.addEventListener("focus", syncAutoTheme);
 buildNav();
 renderOverview();
 renderSearchFilter();
-/* 首屏渲染后立刻在后台预取条目数据（正文/来源/配图），不阻塞首屏 */
-setTimeout(()=> ensureEntries(), 200);
+/* 条目数据（1.2MB）不再随首屏启动立刻下载：首屏只渲染侧边栏+概览，根本用不到它。
+   改为「空闲预取」——首屏完成后浏览器空闲时才开始后台下载，不抢首屏带宽；
+   若用户提前点条目/搜内容，则按需即时加载（搜索框有"正在加载全文索引"提示）。 */
+if("requestIdleCallback" in window){
+  window.requestIdleCallback(()=> ensureEntries(), { timeout: 2500 });
+}else{
+  setTimeout(()=> ensureEntries(), 2500);
+}
+/* 提前触发点：聚焦搜索框 / 点按任意条目链接 → 立刻开始加载数据 */
+$("#q").addEventListener("focus", ()=>{ ensureEntries(); }, {once:true});
+document.addEventListener("pointerdown", e=>{
+  if(e.target.closest(".listlink, #nav .item, .tab[data-view='entry']")) ensureEntries();
+}, {capture:true, passive:true});
 
 // 依据 URL hash 恢复到对应内容（支持刷新保持与分享链接）
 if(location.hash && location.hash.length > 1){
