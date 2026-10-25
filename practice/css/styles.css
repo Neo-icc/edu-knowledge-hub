@@ -1795,9 +1795,6 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
 .sc-mini-go { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-5); }
 
 /* ---------- 场景库 ---------- */
-/* 中文筛选标签：不用西文等宽字体（mono 链无中文回退，部分设备上「身份/困扰」渲染不全），
-   改用 sans + 加粗 + nowrap，保证任何设备完整显示。
-   标签与 chips 包在 .sc-filter-group 里整体换行：老内核 flex 也不会把标签挤出可视区 */
 /* ---------- 场景库筛选区：严格两栏网格 ----------
    第 1 列 = 标签（身份 / 年龄 / 困扰），第 2 列 = 选项 chips。
    这样三个标签的左边缘必然落在同一条竖线上，换行的 chips 也必然从第 2 列
