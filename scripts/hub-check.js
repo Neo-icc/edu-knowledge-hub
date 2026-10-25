@@ -183,11 +183,16 @@ const ok = (name, detail, cond) => {
     ok("导航条目渲染", `${res.navItems} 条`, res.navItems > 400);
   }
 
-  console.log("\n=== 6. 分享按钮 ===\n");
+  console.log("\n=== 6. 分享弹层（复制链接 / 转发微信 / 当前页二维码） ===\n");
   await run(`document.getElementById("share").click()`);
   await sleep(600);
-  const toast = await run(`document.getElementById("toast").classList.contains("on") ? document.getElementById("toast").textContent : ""`);
-  ok("分享触发提示", toast || "无提示", toast.length > 0);
+  const sp = await J(`(()=>{const p=document.getElementById("sharepop");const qr=document.getElementById("sharepop-qr");const ctx=qr.getContext("2d");const d=ctx.getImageData(0,0,60,60).data;let dark=0;for(let i=0;i<d.length;i+=4){if(d[i]<100)dark++;}
+    return JSON.stringify({shown:p&&!p.hidden,url:(document.getElementById("sharepop-url")||{}).textContent||"",qrDark:dark});})()`);
+  ok("分享弹层打开", `URL=${sp.url}`, sp.shown === true);
+  ok("当前页二维码绘制", `深色像素 ${sp.qrDark}`, sp.qrDark > 50);
+  await run(`document.querySelector("#sharepop .sharepop-close").click()`);
+  await sleep(300);
+  ok("弹层可关闭", await run(`document.getElementById("sharepop").hidden`) === true ? "是" : "否", true);
 
   console.log("\n=== 7. 移动端 390×844 ===\n");
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
