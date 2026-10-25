@@ -1819,6 +1819,8 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   letter-spacing: 0.02em;
   color: var(--ink-3);
   margin: 0;
+  /* 小米等浏览器强制深色整页反色时，边框变黑易与文字粘连：文字右移几个像素留出呼吸缝 */
+  padding-left: 0.2rem;
   white-space: nowrap;
   overflow: visible;
   text-overflow: clip;
