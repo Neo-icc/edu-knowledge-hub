@@ -772,13 +772,9 @@ h1.page-title {
 
 /* ---------- 列表 / 条目行 ---------- */
 .filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s2);
-  align-items: center;
   padding: var(--s3) 0 var(--s4);
   /* 左内边距 = 下方「带走一页纸」卡片的内边距(1rem) + 边框(1px)，
-     让筛选标签与卡片内打印图标精确左对齐 */
+     让第一列（身份/年龄/困扰标签）与卡片内打印图标精确左对齐 */
   padding-left: calc(var(--s4) + 1px);
   margin-bottom: var(--s2);
   border-bottom: 1px solid var(--rule);
@@ -1802,19 +1798,22 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
 /* 中文筛选标签：不用西文等宽字体（mono 链无中文回退，部分设备上「身份/困扰」渲染不全），
    改用 sans + 加粗 + nowrap，保证任何设备完整显示。
    标签与 chips 包在 .sc-filter-group 里整体换行：老内核 flex 也不会把标签挤出可视区 */
-.sc-filter-group {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s2);
-  min-width: 0;
-  max-width: 100%;
+/* ---------- 场景库筛选区：严格两栏网格 ----------
+   第 1 列 = 标签（身份 / 年龄 / 困扰），第 2 列 = 选项 chips。
+   这样三个标签的左边缘必然落在同一条竖线上，换行的 chips 也必然从第 2 列
+   起点重新开始，不会再被上一组的内容推着跑、也不会顶回行首。
+   baseline 对齐保证标签文字与同行第一个 chip 的文字在同一基线上。 */
+.sc-filters {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--s3);
+  row-gap: 0.55rem;
+  align-items: baseline;
+  width: 100%;
 }
 .sc-filter-label {
-  display: inline-block;
-  flex: 0 0 auto;
-  width: max-content;
-  max-width: none;
+  grid-column: 1;
+  justify-self: start;
   font-family: var(--sans);
   font-size: 0.75rem;
   font-weight: 600;
@@ -1822,9 +1821,26 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   letter-spacing: 0.02em;
   color: var(--ink-3);
   margin: 0;
+  padding: 0;
   white-space: nowrap;
   overflow: visible;
   text-overflow: clip;
+  /* 三行标签统一最小字宽，保证标签列宽度稳定、绝不被挤压 */
+  min-width: 2.4em;
+}
+.sc-filter-chips {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  align-items: center;
+  min-width: 0;
+}
+.sc-filters .filter-meta {
+  grid-column: 2;
+  justify-self: start;
+  margin-left: 0;
+  margin-top: 0.1rem;
 }
 .sc-list { display: flex; flex-direction: column; gap: var(--s2); }
 .sc-card {
@@ -2565,7 +2581,8 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   .nb-label { display: none; }
   .main-inner { padding: var(--s4) var(--s4) var(--s8); }
   .topbar { padding: var(--s2) var(--s4); }
-  .filter-bar { top: 45px; }
+  /* 窄屏：筛选区改为三行后高度占视口近半，吸顶会大面积遮挡正文，改为随页滚动 */
+  .filter-bar { position: static; }
 }
 
 @media (max-width: 700px) {

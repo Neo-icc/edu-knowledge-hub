@@ -144,7 +144,7 @@ const ok = (name, detail, cond) => {
     ok("时间轴已改名", (nav.deep || [])[0] || "", (nav.deep || [])[0] === "发展顺序");
   }
 
-  console.log("\n=== 3b. 场景库筛选标签（身份/年龄/困扰 完整显示） ===\n");
+  console.log("\n=== 3b. 场景库筛选标签（身份/年龄/困扰 完整显示 + 严格对齐） ===\n");
   await run(`document.getElementById("frame").contentWindow.location.hash = "#/scenarios"`);
   await sleep(900);
   const flt = await J(`(()=>{
@@ -152,18 +152,27 @@ const ok = (name, detail, cond) => {
     if(!f) return JSON.stringify({noFrame:true});
     const labels = [...f.querySelectorAll(".sc-filter-label")];
     const icon = f.querySelector(".pick-head .sec-k .ico");
+    const groups = [...f.querySelectorAll(".sc-filter-chips")];
+    const R = n => Math.round(n * 10) / 10;
     return JSON.stringify({
       count: labels.length,
       texts: labels.map(e=>e.textContent.trim()),
-      groups: f.querySelectorAll(".sc-filter-group").length,
-      iconLeft: icon ? Math.round(icon.getBoundingClientRect().left * 10) / 10 : null,
+      groups: groups.length,
+      iconLeft: icon ? R(icon.getBoundingClientRect().left) : null,
       ok: labels.map(el => {
         const r = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
         return { text: el.textContent.trim(), visible: cs.display !== "none" && r.width > 0,
           full: el.scrollWidth <= r.width + 0.5, inView: r.left >= -0.5 && r.right <= innerWidth + 0.5,
-          left: Math.round(r.left * 10) / 10,
-          font: cs.fontFamily.split(",")[0].replace(/"/g,""), shrink: cs.flexShrink };
+          left: R(r.left), font: cs.fontFamily.split(",")[0].replace(/"/g,"") };
+      }),
+      // 每个选项中组的第一个 chip 左边缘；以及组内所有 chip 的最小左边缘（验证换行后不顶到行首）
+      chipHeads: groups.map(g => {
+        const chips = [...g.querySelectorAll(".chip")];
+        if (!chips.length) return null;
+        const first = chips[0].getBoundingClientRect().left;
+        const min = Math.min(...chips.map(c => c.getBoundingClientRect().left));
+        return { first: R(first), min: R(min), n: chips.length };
       })
     });
   })()`);
@@ -172,9 +181,22 @@ const ok = (name, detail, cond) => {
     ok("筛选标签数量", `${flt.count} 个（${(flt.texts || []).join("/")}）`, flt.count === 3 && (flt.texts || []).join("/") === "身份/年龄/困扰");
     ok("标签完整渲染", JSON.stringify((flt.ok || []).map(o => `${o.text}:${o.visible && o.full && o.inView ? "✓" : "✗"}`)), (flt.ok || []).every(o => o.visible && o.full && o.inView));
     ok("标签字体为 sans 非 mono", JSON.stringify((flt.ok || []).map(o => o.font)), (flt.ok || []).every(o => o.font === "Spline Sans"));
-    ok("标签分组结构", `${flt.groups} 组`, flt.groups === 3);
+    ok("两栏网格结构", `${flt.groups} 个选项列 / ${flt.count} 个标签`, flt.groups === 3 && flt.count === 3);
+    // 三个标签必须落在同一条竖线上
+    const lefts = (flt.ok || []).map(o => o.left);
+    const sameLabel = lefts.length === 3 && Math.max(...lefts) - Math.min(...lefts) < 0.6;
+    ok("三标签左边缘一致", JSON.stringify(lefts), sameLabel);
+    // 三个选项列的第一个 chip 必须落在同一条竖线上
+    const heads = (flt.chipHeads || []).filter(Boolean).map(h => h.first);
+    const sameHead = heads.length === 3 && Math.max(...heads) - Math.min(...heads) < 0.6;
+    ok("三选项列首 chip 一致", JSON.stringify(heads), sameHead);
+    // 换行后的 chip 不得顶到容器行首，必须回到选项列起点
+    const wrapOk = (flt.chipHeads || []).filter(Boolean).every(h => Math.abs(h.min - h.first) < 0.6);
+    ok("换行 chip 不顶格", JSON.stringify((flt.chipHeads || []).map(h => h && `${h.n}:${h.min}`)), wrapOk);
     const firstLeft = (flt.ok || [])[0] ? (flt.ok[0]).left : null;
     ok("标签与打印图标左对齐", `标签 ${firstLeft} · 图标 ${flt.iconLeft}`, firstLeft !== null && flt.iconLeft !== null && Math.abs(firstLeft - flt.iconLeft) < 0.6);
+    // 标签列与选项列之间必须有稳定间距（两栏结构成立）
+    ok("标签与选项列有间距", `标签 ${firstLeft} · 选项 ${heads[0]}`, heads.length === 3 && firstLeft !== null && heads[0] - firstLeft > 8);
   }
   await run(`document.getElementById("frame").contentWindow.location.hash = ""`);
   await sleep(400);

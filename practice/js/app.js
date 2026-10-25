@@ -347,13 +347,16 @@
       <span class="eyebrow">Scenarios · 场景库</span>
       <h1 class="page-title">孩子这样，我该怎么办</h1>
       <p class="page-lead">${esc(intro)}</p>
-      <div class="filter-bar" style="margin-top:0.9rem">
-        <span class="sc-filter-group"><span class="sc-filter-label">身份</span>${audChips}</span>
-        <span class="sc-filter-group" style="margin-left:0.6rem"><span class="sc-filter-label">年龄</span>${ageChips}</span>
-        <span class="filter-meta">${list.length} 个情境</span>
-      </div>
-      <div class="filter-bar" style="margin-top:0.5rem">
-        <span class="sc-filter-group"><span class="sc-filter-label">困扰</span>${concernChips}</span>
+      <div class="filter-bar">
+        <div class="sc-filters">
+          <span class="sc-filter-label">身份</span>
+          <div class="sc-filter-chips">${audChips}</div>
+          <span class="sc-filter-label">年龄</span>
+          <div class="sc-filter-chips">${ageChips}</div>
+          <span class="sc-filter-label">困扰</span>
+          <div class="sc-filter-chips">${concernChips}</div>
+          <span class="filter-meta">共 ${list.length} 个情境</span>
+        </div>
       </div>
       <div class="pick-bar no-print" style="margin-top:0.9rem">
         <div class="pick-head">
