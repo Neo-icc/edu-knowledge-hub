@@ -60,20 +60,27 @@ const ok = (name, detail, cond) => {
   const J = async e => { const v = await run(e); try { return JSON.parse(v); } catch (x) { return { _raw: v }; } };
 
   console.log("\n=== 1. 主页（无导航栏 + 卡片美化） ===\n");
-  const home = await J(`JSON.stringify({
-    topbarHidden: document.getElementById("topbar").hidden,
-    cards: document.querySelectorAll(".ident").length,
-    icons: document.querySelectorAll(".ident .ident-ico svg").length,
-    tags: document.querySelectorAll(".ident .ident-tags em").length,
-    radius: getComputedStyle(document.querySelector(".ident")).borderRadius,
-    heroH1: (document.querySelector(".hero h1") || {}).textContent,
-    floatTheme: !!document.getElementById("theme-landing")
-  })`);
-  ok("主页无顶栏", `topbar.hidden=${home.topbarHidden}`, home.topbarHidden === true);
+  const home = await J(`(()=>{
+    const vis = el => { const r = el.getBoundingClientRect(); const d = getComputedStyle(el).display;
+      return d !== "none" && r.width > 0 && r.height > 0; };
+    return JSON.stringify({
+      topbarHidden: !vis(document.getElementById("topbar")),
+      cards: document.querySelectorAll(".ident").length,
+      visibleCards: [...document.querySelectorAll(".ident")].filter(vis).length,
+      icons: document.querySelectorAll(".ident .ident-ico svg").length,
+      tags: document.querySelectorAll(".ident .ident-tags em").length,
+      radius: getComputedStyle(document.querySelector(".ident")).borderRadius,
+      heroH1: (document.querySelector(".hero h1") || {}).textContent,
+      floatThemeVisible: vis(document.getElementById("theme-landing"))
+    });
+  })()`);
+  ok("主页无顶栏（视觉）", `实际可见=${home.topbarHidden ? "否" : "是"}`, home.topbarHidden === true);
+  ok("浮动主题按钮可见", home.floatThemeVisible ? "是" : "否", home.floatThemeVisible === true);
+  ok("主页仅显示 2 张卡片", `可见 ${home.visibleCards} / 总 ${home.cards}`, home.visibleCards === 2 && home.cards === 2);
   ok("两个入口卡片 + 图标", `卡片 ${home.cards} · 图标 ${home.icons}`, home.cards === 2 && home.icons === 2);
   ok("卡片特性标签", `${home.tags} 个`, home.tags >= 6);
   ok("卡片圆角美化", home.radius, home.radius.includes("20px"));
-  ok("主页浮动主题按钮", home.floatTheme ? "存在" : "缺失", home.floatTheme === true);
+
 
   console.log("\n=== 2. 进入家长或老师：顶栏（房子/分享/圆形主题） ===\n");
   await run(`document.querySelector('.ident[data-ident="educator"]').click()`);
@@ -103,6 +110,19 @@ const ok = (name, detail, cond) => {
       frameSrc: document.getElementById("frame").getAttribute("src")
     });})()`);
   ok("顶栏显示", `visible=${top.visible}`, top.visible === true);
+  const dup = await J(`(()=>{
+    const vis = el => { const r = el.getBoundingClientRect(); return getComputedStyle(el).display !== "none" && r.width > 0 && r.height > 0; };
+    return JSON.stringify({
+      landingHidden: !vis(document.getElementById("landing")),
+      floatThemeHidden: !vis(document.getElementById("theme-landing")),
+      visibleThemeBtns: [document.getElementById("theme"), document.getElementById("theme-landing")].filter(vis).length,
+      frameVisible: vis(document.getElementById("frameWrap"))
+    });
+  })()`);
+  ok("主页内容已隐藏（视觉）", dup.landingHidden ? "是" : "否", dup.landingHidden === true);
+  ok("浮动主题钮已隐藏", dup.floatThemeHidden ? "是" : "否", dup.floatThemeHidden === true);
+  ok("可见主题按钮唯一", `${dup.visibleThemeBtns} 个`, dup.visibleThemeBtns === 1);
+  ok("iframe 已显示", dup.frameVisible ? "是" : "否", dup.frameVisible === true);
   ok("房子图标按钮", `${top.homeSize} · ${top.homeRadius}`, top.homeIcon && top.homeSize === "44x44" && top.homeRadius === "50%");
   ok("分享按钮（主题左侧）", `${top.shareSize}`, top.shareIcon && top.shareSize === "44x44" && top.themeRightOfShare === true);
   ok("主题圆形大图标", `${top.themeSize} · 图标 ${top.themeSvgW}px · ${top.themeRadius}`, top.themeSize === "44x44" && top.themeRadius === "50%" && top.themeSvgW >= 22);

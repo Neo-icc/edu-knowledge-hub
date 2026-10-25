@@ -54,6 +54,9 @@
     --shadow-sm: 0 2px 12px oklch(0% 0 0 / 0.3);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* hidden 属性必须真正隐藏：作者样式的 display 会覆盖 UA 的 [hidden] 规则，
+     这里用 !important 兜底（否则主页顶栏/卡片在切换后仍显示） */
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     background: var(--bg);
@@ -301,6 +304,9 @@
     .frame-wrap { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
   }
 </style>
+  <link rel="prefetch" href="practice/bundle-data-8fc1fbaf.js" as="script" />
+  <link rel="prefetch" href="practice/bundle-app-2aac7f6d.js" as="script" />
+  <link rel="prefetch" href="practice/bundle-e557fbc8.css" as="style" />
 </head>
 <body>
   <header class="topbar" id="topbar" hidden>
@@ -405,6 +411,7 @@
   var topbar = document.getElementById("topbar");
   var tabs = document.getElementById("tabs");
   var themeBtns = [document.getElementById("theme"), document.getElementById("theme-landing")];
+  var themeLanding = document.getElementById("theme-landing");
   var IDENTS = ["educator", "researcher"];
   var TOAST = document.getElementById("toast");
   var toastTimer = null;
@@ -430,6 +437,8 @@
     frameWrap.hidden = isLanding;
     /* 主页不显示导航栏；进入入口后显示（房子 + 入口切换 + 分享 + 主题） */
     topbar.hidden = isLanding;
+    /* 主页浮动主题按钮与顶栏主题按钮互斥：进入入口后隐藏，避免右上角出现两个重叠的按钮 */
+    themeLanding.hidden = !isLanding;
 
     tabs.querySelectorAll(".tab").forEach(function (t) {
       t.classList.toggle("on", t.dataset.ident === next);
