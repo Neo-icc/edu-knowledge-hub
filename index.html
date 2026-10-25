@@ -699,7 +699,7 @@ if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode
       </div>
       <div class="sharepop-qr">
         <canvas id="sharepop-qr" width="360" height="360" aria-label="当前页面二维码"></canvas>
-        <p class="sharepop-qr-hint">手机扫一扫，在手机上打开当前页面再转发</p>
+        <p class="sharepop-qr-hint">链接直达你正在浏览的这个页面状态 · 手机扫码打开后即可转发</p>
       </div>
     </div>
   </div>
@@ -795,15 +795,30 @@ if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode
   /* iframe 加载完成后再推一次主题，避免子应用错过早于加载的 postMessage */
   frame.addEventListener("load", pushTheme);
 
-  /* ---- 分享弹层：分享的就是当前正在浏览的页面（URL 含入口 hash） ---- */
+  /* ---- 分享弹层：分享的就是「当前正在浏览的页面」----
+     子应用与 hub 同源：直接读取 iframe 内的 hash，拼出直达当前状态的深链接。
+     例如研究端点了「观点时间轴」→ https://www.epck.space/research/#/timeline；
+     家长端在看某个场景 → https://www.epck.space/practice/#/scenario/<id>。
+     好友打开即直达同一状态，无需再点一遍。 */
   var sharepop = document.getElementById("sharepop");
+  var SHARE_BASE = "https://www.epck.space";
+  function currentDeepLink() {
+    var next = identFromHash();
+    var childHash = "";
+    try {
+      if (frame && frame.contentWindow) childHash = frame.contentWindow.location.hash || "";
+    } catch (e) { childHash = ""; }
+    if (next === "educator") return SHARE_BASE + "/practice/" + childHash;
+    if (next === "researcher") return SHARE_BASE + "/research/" + childHash;
+    return SHARE_BASE + "/";
+  }
   function drawShareQR() {
     var cv = document.getElementById("sharepop-qr");
     var ctx = cv.getContext("2d");
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, cv.width, cv.height);
     try {
-      var m = qrEncode(location.href);
+      var m = qrEncode(currentDeepLink());
       var cell = cv.width / m.size;
       ctx.fillStyle = "#17140f";
       for (var y = 0; y < m.size; y++) {
@@ -814,7 +829,7 @@ if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode
     } catch (e) { /* 二维码生成失败时保留空白区域 */ }
   }
   document.getElementById("share").addEventListener("click", function () {
-    document.getElementById("sharepop-url").textContent = location.href;
+    document.getElementById("sharepop-url").textContent = currentDeepLink();
     drawShareQR();
     sharepop.hidden = false;
   });
@@ -822,7 +837,7 @@ if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode
     el.addEventListener("click", function () { sharepop.hidden = true; });
   });
   document.getElementById("share-copy").addEventListener("click", async function () {
-    var url = location.href;
+    var url = currentDeepLink();
     try {
       await navigator.clipboard.writeText(url);
       toast("链接已复制，可直接分享");
@@ -839,7 +854,7 @@ if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode
     }
   });
   document.getElementById("share-wechat").addEventListener("click", async function () {
-    var url = location.href;
+    var url = currentDeepLink();
     var title = document.title;
     if (navigator.share) {
       try {
