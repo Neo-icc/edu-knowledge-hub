@@ -1,0 +1,5 @@
+# epck.space 裸域：全部 301 跳转到 www 快通道（GitHub Pages）。
+# 跳转响应只有几百字节，即使 Cloudflare 链路慢也能在数秒内完成；
+# 跳转后所有流量走 GitHub CDN，路径与查询串原样保留。
+/  https://www.epck.space/  301
+/* https://www.epck.space/:splat  301
