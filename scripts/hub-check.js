@@ -151,15 +151,18 @@ const ok = (name, detail, cond) => {
     const f = document.getElementById("frame").contentDocument;
     if(!f) return JSON.stringify({noFrame:true});
     const labels = [...f.querySelectorAll(".sc-filter-label")];
+    const icon = f.querySelector(".pick-head .sec-k .ico");
     return JSON.stringify({
       count: labels.length,
       texts: labels.map(e=>e.textContent.trim()),
       groups: f.querySelectorAll(".sc-filter-group").length,
+      iconLeft: icon ? Math.round(icon.getBoundingClientRect().left * 10) / 10 : null,
       ok: labels.map(el => {
         const r = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
         return { text: el.textContent.trim(), visible: cs.display !== "none" && r.width > 0,
           full: el.scrollWidth <= r.width + 0.5, inView: r.left >= -0.5 && r.right <= innerWidth + 0.5,
+          left: Math.round(r.left * 10) / 10,
           font: cs.fontFamily.split(",")[0].replace(/"/g,""), shrink: cs.flexShrink };
       })
     });
@@ -170,6 +173,8 @@ const ok = (name, detail, cond) => {
     ok("标签完整渲染", JSON.stringify((flt.ok || []).map(o => `${o.text}:${o.visible && o.full && o.inView ? "✓" : "✗"}`)), (flt.ok || []).every(o => o.visible && o.full && o.inView));
     ok("标签字体为 sans 非 mono", JSON.stringify((flt.ok || []).map(o => o.font)), (flt.ok || []).every(o => o.font === "Spline Sans"));
     ok("标签分组结构", `${flt.groups} 组`, flt.groups === 3);
+    const firstLeft = (flt.ok || [])[0] ? (flt.ok[0]).left : null;
+    ok("标签与打印图标左对齐", `标签 ${firstLeft} · 图标 ${flt.iconLeft}`, firstLeft !== null && flt.iconLeft !== null && Math.abs(firstLeft - flt.iconLeft) < 0.6);
   }
   await run(`document.getElementById("frame").contentWindow.location.hash = ""`);
   await sleep(400);

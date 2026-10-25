@@ -777,6 +777,9 @@ h1.page-title {
   gap: var(--s2);
   align-items: center;
   padding: var(--s3) 0 var(--s4);
+  /* 左内边距 = 下方「带走一页纸」卡片的内边距(1rem) + 边框(1px)，
+     让筛选标签与卡片内打印图标精确左对齐 */
+  padding-left: calc(var(--s4) + 1px);
   margin-bottom: var(--s2);
   border-bottom: 1px solid var(--rule);
   position: sticky;
@@ -1819,8 +1822,6 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   letter-spacing: 0.02em;
   color: var(--ink-3);
   margin: 0;
-  /* 小米等浏览器强制深色整页反色时，边框变黑易与文字粘连：文字右移几个像素留出呼吸缝 */
-  padding-left: 0.2rem;
   white-space: nowrap;
   overflow: visible;
   text-overflow: clip;
