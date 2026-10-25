@@ -157,9 +157,12 @@ img, svg { display: block; max-width: 100%; }
 }
 
 .sidebar-head {
+  position: relative;
   padding: var(--s5) var(--s5) var(--s4);
   border-bottom: 1px solid var(--rule);
 }
+/* 折叠按钮绝对定位到头部右上角，与品牌标题并排不挤占正文 */
+.nav-fold-btn { position: absolute; top: 14px; right: 14px; }
 
 .brand { display: block; }
 .brand-title {
@@ -2492,6 +2495,34 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   .aside-block { flex: 1 1 240px; }
 }
 
+/* 桌面端侧栏折叠（断点与移动抽屉一致：861px）：
+   折叠按钮在侧栏头部；折叠后侧栏隐藏、正文单列占满；左上角悬浮「展开侧栏」按钮 */
+@media (min-width: 861px) {
+  .nav-fold-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: auto; padding: 4px 8px;
+    border: 1px solid var(--rule); border-radius: var(--r2);
+    background: transparent; color: var(--ink-3); cursor: pointer;
+    font-size: 0.78rem;
+  }
+  .nav-fold-btn:hover { border-color: var(--rule-2); color: var(--ink); }
+  body.nav-fold .app-shell { grid-template-columns: minmax(0, 1fr); }
+  body.nav-fold .sidebar { display: none; }
+  .fold-float { display: none; }
+  body.nav-fold .fold-float {
+    position: fixed; left: 14px; top: 14px; z-index: 130;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border: 1px solid var(--rule-2); border-radius: 999px;
+    background: var(--paper); color: var(--ink-2); cursor: pointer;
+    box-shadow: var(--shadow-3); font-size: 0.85rem;
+  }
+  body.nav-fold .fold-float:hover { border-color: var(--accent); color: var(--accent); }
+}
+@media (max-width: 860px) {
+  .nav-fold-btn { display: none; }
+  .fold-float { display: none !important; }
+}
+
 @media (max-width: 900px) {
   .handout-row { grid-template-columns: 1fr; gap: 0.45rem; }
   .handout-item { break-inside: auto; }
@@ -2513,6 +2544,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
     z-index: 110; animation: fadeIn var(--t-fast) var(--ease);
   }
   .mobile-only { display: inline-flex; }
+  .nb-label { display: none; }
   .main-inner { padding: var(--s4) var(--s4) var(--s8); }
   .topbar { padding: var(--s2) var(--s4); }
   .filter-bar { top: 45px; }

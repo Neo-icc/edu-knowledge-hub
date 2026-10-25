@@ -14,6 +14,7 @@
     scConcerns: [],
     sheetPick: [],
     navOpen: false,
+    navFold: false,
     filter: { domain: "", branch: "", kind: "" },
     tlDomain: "",
     tlEra: "",
@@ -150,6 +151,7 @@
     return `
     <aside class="sidebar" id="sidebar" aria-label="主导航">
       <div class="sidebar-head">
+        <button class="nav-fold-btn" id="nav-fold-btn" aria-label="收起侧栏" title="收起侧栏">«<span>收起</span></button>
         <a class="brand" href="#/">
           <span class="brand-title">教育与心智<br/>知识图谱</span>
           <span class="brand-en">Education · Mind · Brain Atlas</span>
@@ -188,6 +190,7 @@
 
   function shellHTML(active, inner, crumb) {
     return `
+    <button class="fold-float" id="fold-float" aria-label="展开侧栏" title="展开侧栏">☰<span>展开侧栏</span></button>
     <div class="app-shell ${state.navOpen ? "nav-open" : ""}">
       ${sidebarHTML(active)}
       ${state.navOpen ? '<div class="nav-scrim" id="nav-scrim"></div>' : ""}
@@ -2028,7 +2031,7 @@
     const themeToggle = document.getElementById("theme-toggle");
     if (themeToggle) themeToggle.addEventListener("click", toggle);
 
-    /* 移动导航 */
+    /* 移动导航（抽屉） */
     const navBtn = document.getElementById("nav-btn");
     if (navBtn) navBtn.addEventListener("click", () => {
       state.navOpen = true;
@@ -2038,6 +2041,18 @@
       scrim.addEventListener("click", () => closeNav());
       document.querySelector(".main").appendChild(scrim);
     });
+
+    /* 桌面侧栏折叠：折叠后正文占满整行；折叠态左上角出悬浮展开按钮 */
+    const toggleFold = () => {
+      state.navFold = !state.navFold;
+      document.body.classList.toggle("nav-fold", state.navFold);
+      try { localStorage.setItem("atlas-nav-fold", state.navFold ? "1" : "0"); } catch (e) {}
+      render();
+    };
+    const foldBtn = document.getElementById("nav-fold-btn");
+    if (foldBtn) foldBtn.addEventListener("click", toggleFold);
+    const foldFloat = document.getElementById("fold-float");
+    if (foldFloat) foldFloat.addEventListener("click", toggleFold);
     const scrim = document.getElementById("nav-scrim");
     if (scrim) scrim.addEventListener("click", closeNav);
 
@@ -2238,6 +2253,14 @@
       applyTheme(e.newValue);
     }
   });
+
+  /* 恢复桌面侧栏折叠状态 */
+  (function () {
+    let f = "0";
+    try { f = localStorage.getItem("atlas-nav-fold") || "0"; } catch (e) {}
+    state.navFold = f === "1";
+    if (state.navFold) document.body.classList.add("nav-fold");
+  })();
 
   document.addEventListener("DOMContentLoaded", render);
   if (document.readyState !== "loading") render();
