@@ -228,6 +228,36 @@
     all: "通用",
   };
   const PRINTER_ICO = '<svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
+  const SHARE_ICO = '<svg class="ico" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5"/><path d="m8.2 7.2 3.8-3.7 3.8 3.7"/><path d="M5.5 12.5v7.5h13v-7.5"/></svg>';
+
+  /* 转发图底部缀言：教育哲学意味的一句话，按场景 id 稳定选取 */
+  const QUOTES = [
+    "教育不是灌满一桶水，而是点燃一团火。",
+    "孩子不是有待填满的瓶子，而是有待点燃的火焰。",
+    "看见孩子，比纠正孩子更接近教育本身。",
+    "我们无法替孩子避开所有风浪，只能教他如何扬帆。",
+    "慢慢来，反而比较快——成长的秩序自有其节奏。",
+    "关系先于教育：先让孩子愿意听，再谈说什么。",
+    "每个孩子都是一本书，教育是学会读懂他，而不是改写他。",
+    "最好的教育，是让孩子被看见，也被接住。",
+    "理解一个孩子，比指导一个孩子需要更大的智慧。",
+    "教育是一场静待花开的守望，不是一场限时的赛跑。",
+    "把童年还给孩子，把成长交给时间。",
+    "给孩子讲道理之前，先蹲下来，站到他的高度看世界。",
+    "一棵树摇动另一棵树，一朵云推动另一朵云，一个灵魂唤醒另一个灵魂。",
+    "教育即生长——除生长之外，别无目的。",
+    "真正重要的东西，眼睛是看不见的；唯有用心，才能读懂一个孩子。",
+    "凡走过的路都算数，凡陪伴的时光都成光。",
+    "爱是教育唯一的通行证。",
+    "童年的答案，往往藏在成年后的回望里。",
+    "教育的根是苦的，但其果实是甜的。",
+    "先做一个安静的观察者，再做一个温和的引路人。",
+  ];
+  function quoteFor(id) {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return QUOTES[h % QUOTES.length];
+  }
 
   function activityHTML(id) {
     const act = S.activities[id];
@@ -275,7 +305,10 @@
         ${activityHTML(s.id)}
         ${s.escalate && s.escalate !== "—" ? `<div class="sc-esc"><span class="sc-k">何时找专业帮助</span>${esc(s.escalate)}</div>` : ""}
         ${entries.length ? `<div class="sc-links"><span class="sc-k">背后的机制</span>${entries.map((e) => `<a class="rel-pill" href="#/entry/${e.id}">${esc(e.name)}</a>`).join("")}</div>` : ""}
-        <div class="sc-actions no-print"><a class="btn ghost sm" href="#/scenario/${s.id}">打印这一条 →</a></div>
+        <div class="sc-actions no-print">
+          <a class="btn ghost sm" href="#/scenario/${s.id}">${PRINTER_ICO}打印这一条</a>
+          <button class="btn ghost sm" data-share-sc="${s.id}">${SHARE_ICO}转发这一条</button>
+        </div>
       </div>
     </details>`;
   }
@@ -351,8 +384,8 @@
     <div class="sheet-actions no-print">
       <a class="back-link" href="#/scenarios?open=${s.id}">← 返回场景库</a>
       <div class="sheet-actions-right">
-        <button class="btn ghost sm" id="sheet-print">打印</button>
-        <button class="btn primary sm" id="sheet-image">存为图片</button>
+        <button class="btn ghost sm" id="sheet-print">${PRINTER_ICO}打印</button>
+        <button class="btn primary sm" id="sheet-image">${PRINTER_ICO}存为图片</button>
       </div>
     </div>
     <article class="sheet-paper">
@@ -443,8 +476,8 @@
       <a class="back-link" href="#/scenarios">← 返回场景库</a>
       <div class="sheet-actions-right">
         <span class="filter-meta">A4 · 单页 · 已合并 ${list.length} 条</span>
-        <button class="btn ghost sm" id="sheet-print">打印</button>
-        <button class="btn primary sm" id="sheet-image">存为图片</button>
+        <button class="btn ghost sm" id="sheet-print">${PRINTER_ICO}打印</button>
+        <button class="btn primary sm" id="sheet-image">${PRINTER_ICO}存为图片</button>
       </div>
     </div>
     <article class="sheet-paper handout">
@@ -591,6 +624,131 @@
     return out;
   }
 
+  /* 情境 doc 构建（打印图 / 转发图共用）；返回 { doc, s } */
+  function buildScenarioDoc(id) {
+    const s = S.scenarioById[id];
+    if (!s) return null;
+    const entries = (s.links || []).map((x) => S.byId[x]).filter(Boolean);
+    const act = S.activities[s.id];
+    const today = new Date();
+    const dateStr = today.getFullYear() + " 年 " + (today.getMonth() + 1) + " 月 " + today.getDate() + " 日";
+    const doc = {
+      kicker: "教育与心智知识图谱 · 情境卡",
+      title: s.title,
+      meta: [AGE_NAME[s.age] || s.age, s.audience.map((a) => (a === "teacher" ? "给老师" : "给家长")).join(" / "), "证据：" + ((A.confidences[s.evidence] || {}).name || s.evidence), s.id],
+      sections: [
+        { h: "你看到的现象", p: s.signal },
+        { h: "可能不是你以为的那样", p: s.read },
+        { h: "可以试", list: s.do, ordered: true },
+        { h: "先别做", list: s.dont },
+        { h: "可以这样说", list: s.say },
+      ].concat(
+        act ? [{ h: "5 分钟课堂活动 · " + act.name + "（" + act.minutes + " 分钟）", p: "材料：" + act.materials + "　时机：" + act.when + "　" + act.note, list: act.steps, ordered: true }] : [],
+        (s.escalate && s.escalate !== "—") ? [{ h: "何时找专业帮助", p: s.escalate }] : [],
+        entries.length ? [{ h: "依据（可查证的机制条目）", refs: entries.map((e) => e.name + "　" + S.thinkerName(e.thinker) + "，" + fmtYear(e.year) + "　" + e.id) }] : []
+      ),
+      foot: ["本卡是对站内知识条目的编辑性综合，不构成诊断，也不能替代个别化评估。涉及发展与精神健康问题，请以专业人员意见为准。", "教育与心智知识图谱 v" + A.meta.version + " · " + dateStr + " · " + s.id],
+      filename: "情境卡-" + s.id + ".png",
+    };
+    return { doc, s };
+  }
+
+
+  /* 转发图页脚：分隔线 + 教育哲言 + 站点水印 + 回到场景页的二维码 */
+  function drawShareFooter(canvas, s) {
+    const W = canvas.width, pad = 56;
+    const FH = 224;
+    const out = document.createElement("canvas");
+    out.width = W;
+    out.height = canvas.height + FH;
+    const ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, out.height);
+    ctx.drawImage(canvas, 0, 0);
+
+    const base = canvas.height;
+    ctx.strokeStyle = "#e5e0d8";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad, base + 8); ctx.lineTo(W - pad, base + 8); ctx.stroke();
+
+    /* 哲言（文艺哲学味，按场景稳定选取） */
+    const quote = "「" + quoteFor(s.id) + "」";
+    ctx.fillStyle = "#8a3d1f";
+    ctx.font = "italic 15px Georgia,'Noto Serif SC','Songti SC',serif";
+    wrapText(ctx, quote, W - pad * 2 - 130).forEach((ln, i) => {
+      ctx.fillText(ln, pad, base + 44 + i * 26);
+    });
+
+    /* 站点水印 */
+    ctx.fillStyle = "#57534e";
+    ctx.font = "12px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.fillText("www.epck.space · 教育与心智知识图谱", pad, base + 44 + 26 + 34);
+
+    /* 二维码（指向该场景页，扫码直达） */
+    try {
+      const qrSize = 96;
+      const qx = W - pad - qrSize, qy = base + 28;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(qx - 8, qy - 8, qrSize + 16, qrSize + 16);
+      const m = qrEncode("https://www.epck.space/practice/#/scenario/" + s.id);
+      const cell = qrSize / m.size;
+      ctx.fillStyle = "#1c1a17";
+      for (let y = 0; y < m.size; y++) {
+        for (let x = 0; x < m.size; x++) {
+          if (m.matrix[y][x]) ctx.fillRect(qx + x * cell, qy + y * cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+      ctx.fillStyle = "#8a8580";
+      ctx.font = "10px 'PingFang SC','Microsoft YaHei',sans-serif";
+      ctx.fillText("扫码回到场景页", qx + qrSize / 2 - ctx.measureText("扫码回到场景页").width / 2, qy + qrSize + 16);
+    } catch (e) { /* 二维码生成失败不影响正文 */ }
+
+    return out;
+  }
+
+  /* 转发一条情境：输出带哲言/水印/二维码的打印图，优先调起系统分享（可发微信），
+     回退下载图片并提示 */
+  function shareScenario(id) {
+    const built = buildScenarioDoc(id);
+    if (!built) return;
+    const canvas = drawShareFooter(renderSheetImage(built.doc), built.s);
+    canvas.toBlob(async (blob) => {
+      if (!blob) { shareToast("图片生成失败，请重试"); return; }
+      const file = new File([blob], built.doc.filename, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: built.doc.title });
+          shareToast("已调起分享，选择微信即可发送");
+          return;
+        } catch (e) { /* 用户取消或失败，回退下载 */ }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = built.doc.filename.replace(".png", "-分享版.png");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      shareToast("分享图已保存，请到微信发送给朋友");
+    }, "image/png");
+  }
+
+  /* 轻量提示条 */
+  function shareToast(msg) {
+    let t = document.getElementById("sc-toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "sc-toast";
+      t.setAttribute("role", "status");
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("on");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove("on"), 2600);
+  }
+
   function downloadSheetImage() {
     const { parts, query } = parseHash();
     const route = parts[0] || "";
@@ -599,28 +757,9 @@
     let doc = null;
 
     if (route === "scenario") {
-      const s = S.scenarioById[parts[1]];
-      if (!s) return;
-      const entries = (s.links || []).map((id) => S.byId[id]).filter(Boolean);
-      const act = S.activities[s.id];
-      doc = {
-        kicker: "教育与心智知识图谱 · 情境卡",
-        title: s.title,
-        meta: [AGE_NAME[s.age] || s.age, s.audience.map((a) => (a === "teacher" ? "给老师" : "给家长")).join(" / "), "证据：" + ((A.confidences[s.evidence] || {}).name || s.evidence), s.id],
-        sections: [
-          { h: "你看到的现象", p: s.signal },
-          { h: "可能不是你以为的那样", p: s.read },
-          { h: "可以试", list: s.do, ordered: true },
-          { h: "先别做", list: s.dont },
-          { h: "可以这样说", list: s.say },
-        ].concat(
-          act ? [{ h: "5 分钟课堂活动 · " + act.name + "（" + act.minutes + " 分钟）", p: "材料：" + act.materials + "　时机：" + act.when + "　" + act.note, list: act.steps, ordered: true }] : [],
-          (s.escalate && s.escalate !== "—") ? [{ h: "何时找专业帮助", p: s.escalate }] : [],
-          entries.length ? [{ h: "依据（可查证的机制条目）", refs: entries.map((e) => e.name + "　" + S.thinkerName(e.thinker) + "，" + fmtYear(e.year) + "　" + e.id) }] : []
-        ),
-        foot: ["本卡是对站内知识条目的编辑性综合，不构成诊断，也不能替代个别化评估。涉及发展与精神健康问题，请以专业人员意见为准。", "教育与心智知识图谱 v" + A.meta.version + " · " + dateStr + " · " + s.id],
-        filename: "情境卡-" + s.id + ".png",
-      };
+      const built = buildScenarioDoc(parts[1]);
+      if (!built) return;
+      doc = built.doc;
     } else if (route === "handout") {
       const rawIds = String(query.ids || "").split(",").map((x) => x.trim()).filter(Boolean);
       const ids = rawIds.filter((id, i) => rawIds.indexOf(id) === i).slice(0, 3);
@@ -642,7 +781,6 @@
         filename: "一页纸-" + dateStr.replace(/\s/g, "") + ".png",
       };
     }
-
     if (!doc) return;
     const canvas = renderSheetImage(doc);
     canvas.toBlob((blob) => {
@@ -1914,6 +2052,11 @@
         state.scAudience = state.scAudience === v ? "" : v;
         go(scenarioURL());
       });
+    });
+
+    /* 转发一条情境：生成带哲言/水印/二维码的分享图 */
+    document.querySelectorAll("[data-share-sc]").forEach((el) => {
+      el.addEventListener("click", () => shareScenario(el.dataset.shareSc));
     });
     document.querySelectorAll("[data-sc-concern]").forEach((el) => {
       el.addEventListener("click", () => {

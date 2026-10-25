@@ -100,7 +100,7 @@ def main():
     # ---------- 1. 收集脚本 ----------
     srcs = re.findall(r'<script src="(js/[^"]+?)"', html)
     data_srcs = [s for s in srcs if s.startswith("js/data/")]
-    core_srcs = [s for s in srcs if re.match(r"js/(core|app)\.js", s)]
+    core_srcs = [s for s in srcs if re.match(r"js/(core|app|qr)\.js", s)]
     vendor_srcs = [s for s in srcs if "vendor" in s]
     if not data_srcs or not core_srcs:
         sys.exit("未找到预期的脚本结构，已中止（检查 practice/index.src.html）")
