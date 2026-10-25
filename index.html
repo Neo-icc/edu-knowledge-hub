@@ -27,10 +27,13 @@
     --rule2: oklch(80% 0.016 75);
     --accent: oklch(44% 0.155 30);
     --accent-ink: oklch(99% 0.005 85);
+    --accent-soft: oklch(94% 0.035 40);
     --derive: oklch(46% 0.11 252);
+    --derive-soft: oklch(94% 0.025 250);
     --serif: "Fraunces", "Noto Serif SC", "Songti SC", Georgia, serif;
     --sans: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
-    --shadow: 0 4px 18px oklch(20% 0.02 75 / 0.08), 0 2px 6px oklch(20% 0.02 75 / 0.05);
+    --shadow: 0 8px 26px oklch(20% 0.02 75 / 0.10), 0 2px 6px oklch(20% 0.02 75 / 0.05);
+    --shadow-sm: 0 2px 10px oklch(20% 0.02 75 / 0.06);
   }
   html[data-theme="dark"] {
     --bg: oklch(19% 0.010 75);
@@ -44,8 +47,11 @@
     --rule2: oklch(38% 0.014 75);
     --accent: oklch(70% 0.14 32);
     --accent-ink: oklch(18% 0.02 75);
+    --accent-soft: oklch(30% 0.05 35);
     --derive: oklch(74% 0.10 252);
-    --shadow: 0 4px 18px oklch(0% 0 0 / 0.4);
+    --derive-soft: oklch(28% 0.04 252);
+    --shadow: 0 10px 30px oklch(0% 0 0 / 0.45);
+    --shadow-sm: 0 2px 12px oklch(0% 0 0 / 0.3);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -58,157 +64,286 @@
     -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; text-decoration: none; }
-  button { font-family: inherit; cursor: pointer; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  svg { display: block; }
 
-  /* 顶栏 */
+  /* ===== 顶栏（仅在进入入口后显示；主页不显示导航栏） ===== */
   .topbar {
-    height: 56px;
+    height: 60px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 0 20px;
+    gap: 12px;
+    padding: 0 16px;
     border-bottom: 1px solid var(--rule);
-    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 30;
   }
-  .brand {
+  .topbar[hidden] { display: none; }
+
+  /* 圆形图标按钮：房子 / 分享 / 主题（44px 完美圆形，图标 22px 醒目） */
+  .icon-round {
+    width: 44px; height: 44px;
+    flex: 0 0 44px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink2);
+    display: grid; place-items: center;
+    transition: border-color .18s ease, color .18s ease, background .18s ease, transform .18s ease;
+  }
+  .icon-round svg { width: 22px; height: 22px; }
+  .icon-round:hover { color: var(--ink); border-color: var(--rule2); transform: translateY(-1px); }
+  .icon-round:active { transform: scale(.96); }
+  .icon-round:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* 主题按钮：当前为浅色时显示月亮（点击入夜），深色时显示太阳 */
+  .theme-btn { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--rule)); }
+  .theme-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .theme-btn .ico-sun, .theme-btn .ico-moon { width: 23px; height: 23px; }
+  html[data-theme="light"] .theme-btn .ico-sun { display: none; }
+  html[data-theme="dark"] .theme-btn .ico-moon { display: none; }
+
+  /* 中间分段式入口切换 */
+  .tabs {
+    flex: 1 1 auto;
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--serif);
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
   }
-  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-  .spacer { flex: 1; }
-  .tabs { display: flex; gap: 4px; }
   .tab {
-    padding: 7px 14px;
-    border: 1px solid transparent;
+    padding: 9px 18px;
     border-radius: 999px;
-    background: transparent;
+    border: 1px solid transparent;
     color: var(--ink3);
-    font-size: 0.86rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
     transition: all .18s ease;
   }
   .tab:hover { color: var(--ink); background: var(--bg2); }
-  .tab.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .theme-btn {
-    width: 36px; height: 36px;
-    border: 1px solid var(--rule);
-    border-radius: 50%;
-    background: transparent;
-    color: var(--ink2);
-    font-size: 1rem;
-    display: grid; place-items: center;
+  .tab.on {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+    box-shadow: var(--shadow-sm);
   }
-  .theme-btn:hover { border-color: var(--rule2); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 
-  /* 落地页 */
-  .landing {
-    max-width: 1040px;
-    margin: 0 auto;
-    padding: 48px 20px 72px;
+  /* ===== 主页（无顶栏，独立的主题切换浮钮） ===== */
+  .landing-theme {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 40;
+    box-shadow: var(--shadow-sm);
   }
-  .hero { text-align: center; margin-bottom: 48px; }
+  .landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 76px 22px 72px;
+  }
+  .hero { text-align: center; margin-bottom: 44px; }
   .eyebrow {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
     font-size: 0.72rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink5);
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: "";
+    width: 26px; height: 1px;
+    background: var(--rule2);
   }
   .hero h1 {
     font-family: var(--serif);
     font-weight: 700;
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
     line-height: 1.12;
     letter-spacing: -0.02em;
     margin-bottom: 16px;
   }
-  .hero-sub { max-width: 40ch; margin: 0 auto; color: var(--ink5); font-size: 0.88rem; }
+  .hero-sub { max-width: 42ch; margin: 0 auto; color: var(--ink5); font-size: 0.9rem; }
 
   .ident-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    max-width: 720px;
+    gap: 22px;
+    max-width: 780px;
+    width: 100%;
     margin: 0 auto;
   }
   .ident {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
-    padding: 34px 28px;
+    gap: 10px;
+    padding: 30px 30px 26px;
     background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 16px;
+    border-radius: 20px;
     text-align: left;
-    font-family: inherit;
-    color: var(--ink);
-    cursor: pointer;
-    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    overflow: hidden;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
   }
+  .ident::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: var(--accent);
+    opacity: .85;
+  }
+  .ident[data-ident="researcher"]::before { background: var(--derive); }
   .ident:hover, .ident:focus-visible {
     border-color: var(--accent);
     box-shadow: var(--shadow);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
     outline: none;
   }
+  .ident[data-ident="researcher"]:hover, .ident[data-ident="researcher"]:focus-visible {
+    border-color: var(--derive);
+  }
+  .ident-ico {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    display: grid; place-items: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    margin-bottom: 4px;
+    transition: transform .2s ease;
+  }
+  .ident[data-ident="researcher"] .ident-ico { background: var(--derive-soft); color: var(--derive); }
+  .ident:hover .ident-ico { transform: scale(1.06) rotate(-2deg); }
+  .ident-ico svg { width: 28px; height: 28px; }
   .ident-kicker {
     font-size: 0.66rem;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ink5);
   }
   .ident-name {
     font-family: var(--serif);
     font-weight: 700;
-    font-size: 2.2rem;
-    line-height: 1.05;
+    font-size: 2rem;
+    line-height: 1.08;
     letter-spacing: -0.01em;
   }
-  .ident-sub { font-size: 0.82rem; line-height: 1.6; color: var(--ink3); }
+  .ident-sub { font-size: 0.86rem; line-height: 1.65; color: var(--ink3); }
+  .ident-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .ident-tags em {
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--ink3);
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: var(--bg);
+  }
   .ident-go {
-    margin-top: 6px;
+    margin-top: 12px;
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
+  .ident[data-ident="researcher"] .ident-go { color: var(--derive); }
+  .ident-go svg { width: 15px; height: 15px; transition: transform .2s ease; }
+  .ident:hover .ident-go svg { transform: translateX(3px); }
 
-  .note { text-align: center; color: var(--ink5); font-size: 0.82rem; margin-top: 28px; }
+  .note { text-align: center; color: var(--ink5); font-size: 0.82rem; margin-top: 34px; }
 
   /* iframe 壳 */
-  .frame-wrap { height: calc(100vh - 56px); }
+  .frame-wrap { height: calc(100vh - 60px); height: calc(100dvh - 60px); }
   iframe { width: 100%; height: 100%; border: none; display: block; background: var(--bg); }
 
-  @media (max-width: 600px) {
-    .topbar { padding: 0 12px; gap: 8px; }
-    .brand { font-size: 0.95rem; }
-    .tab { padding: 6px 10px; font-size: 0.78rem; }
-    .landing { padding: 32px 14px 56px; }
-    .ident-grid { grid-template-columns: 1fr; }
-    .ident { padding: 26px 22px; }
-    .ident-name { font-size: 1.8rem; }
+  /* 分享提示 */
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 34px;
+    transform: translate(-50%, 12px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+    z-index: 60;
+    pointer-events: none;
+    box-shadow: var(--shadow);
+  }
+  #toast.on { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+
+  @media (max-width: 720px) {
+    .topbar { padding: 0 10px; gap: 8px; height: 56px; }
+    .icon-round { width: 40px; height: 40px; flex-basis: 40px; }
+    .icon-round svg { width: 20px; height: 20px; }
+    .tab { padding: 8px 12px; font-size: 0.82rem; }
+    .landing { padding: 60px 16px 56px; }
+    .ident-grid { grid-template-columns: 1fr; gap: 16px; }
+    .ident { padding: 24px 22px 22px; border-radius: 16px; }
+    .ident-name { font-size: 1.7rem; }
+    .frame-wrap { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
   }
 </style>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="#" data-home><span class="dot"></span><span>教育与心智 · 知识图谱</span></a>
-    <div class="spacer"></div>
-    <nav class="tabs" id="tabs">
+  <header class="topbar" id="topbar" hidden>
+    <a class="icon-round" href="#/" data-home aria-label="返回主页" title="返回主页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.4 10.6 12 3.3l8.6 7.3"/>
+        <path d="M5.6 9.4V20.2h12.8V9.4"/>
+        <path d="M9.9 20.2v-5.6h4.2v5.6"/>
+      </svg>
+    </a>
+    <nav class="tabs" id="tabs" aria-label="入口切换">
       <button class="tab" data-ident="educator">家长或老师</button>
       <button class="tab" data-ident="researcher">教育研究者</button>
     </nav>
-    <button class="theme-btn" id="theme" aria-label="切换主题">◐</button>
+    <div class="topbar-right">
+      <button class="icon-round" id="share" aria-label="分享此页" title="分享此页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 14.6V3.6"/>
+          <path d="m8.2 7.2 3.8-3.6 3.8 3.6"/>
+          <path d="M5.4 12.4v7.4h13.2v-7.4"/>
+        </svg>
+      </button>
+      <button class="icon-round theme-btn" id="theme" aria-label="切换主题" title="切换主题">
+        <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.3"/>
+          <path d="M12 2.6v2.3M12 19.1v2.3M2.6 12h2.3M19.1 12h2.3M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M6.8 17.2l-1.7 1.7"/>
+        </svg>
+        <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.2 14.4A8.4 8.4 0 0 1 9.6 3.8a8.4 8.4 0 1 0 10.6 10.6z"/>
+        </svg>
+      </button>
+    </div>
   </header>
+
+  <button class="icon-round theme-btn landing-theme" id="theme-landing" aria-label="切换主题" title="切换主题">
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.3"/>
+      <path d="M12 2.6v2.3M12 19.1v2.3M2.6 12h2.3M19.1 12h2.3M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M6.8 17.2l-1.7 1.7"/>
+    </svg>
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M20.2 14.4A8.4 8.4 0 0 1 9.6 3.8a8.4 8.4 0 1 0 10.6 10.6z"/>
+    </svg>
+  </button>
 
   <main id="main">
     <section class="landing" id="landing">
@@ -220,20 +355,39 @@
 
       <div class="ident-grid">
         <button class="ident" data-ident="educator">
+          <span class="ident-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.5 11.6c0 4-3.8 7.2-8.5 7.2-1 0-2-.1-2.9-.4L4 20l1.2-3.4c-1.1-1.3-1.7-3-1.7-5 0-4 3.8-7.2 8.5-7.2s8.5 3.2 8.5 7.2z"/>
+              <path d="M12 8.6c1.1-1.3 3.1-.7 3.1 1 0 1.5-2 2.6-3.1 3.5-1.1-.9-3.1-2-3.1-3.5 0-1.7 2-2.3 3.1-1z"/>
+            </svg>
+          </span>
           <span class="ident-kicker">给家长与老师</span>
           <span class="ident-name">家长或老师</span>
-          <span class="ident-sub">孩子这样，我该怎么办<br>按年龄分诊 · 课堂活动 · 一页纸带走</span>
-          <span class="ident-go">进入 →</span>
+          <span class="ident-sub">孩子这样，我该怎么办</span>
+          <span class="ident-tags"><em>按年龄分诊</em><em>课堂活动</em><em>一页纸带走</em></span>
+          <span class="ident-go">进入
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6.5 5.5 5.5L13 17.5"/></svg>
+          </span>
         </button>
         <button class="ident" data-ident="researcher">
+          <span class="ident-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5.2h6.2v13.6H4z"/><path d="M13.8 5.2H20v13.6h-6.2z"/>
+              <path d="M6.4 8.6h1.5M6.4 11.6h1.5M16.1 8.6h1.5M16.1 11.6h1.5"/>
+              <path d="M12 3.6v16.8"/>
+            </svg>
+          </span>
           <span class="ident-kicker">给教育研究者 · 学者</span>
           <span class="ident-name">教育研究者</span>
-          <span class="ident-sub">检索 · 引用 · 数据<br>五大领域 454 条深度条目</span>
-          <span class="ident-go">进入 →</span>
+          <span class="ident-sub">检索 · 引用 · 数据</span>
+          <span class="ident-tags"><em>454 条深度条目</em><em>102 观点</em><em>54 人物</em></span>
+          <span class="ident-go">进入
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6.5 5.5 5.5L13 17.5"/></svg>
+          </span>
         </button>
       </div>
 
-      <p class="note">身份不锁定，内容不复制。点击左上角品牌可随时返回此页。</p>
+      <p class="note">身份不锁定，内容不复制。进入后点左上角房子图标可随时返回此页。</p>
     </section>
 
     <div class="frame-wrap" id="frameWrap" hidden>
@@ -241,38 +395,52 @@
     </div>
   </main>
 
+  <div id="toast" role="status" aria-live="polite"></div>
+
 <script>
 (function () {
   var frame = document.getElementById("frame");
   var frameWrap = document.getElementById("frameWrap");
   var landing = document.getElementById("landing");
+  var topbar = document.getElementById("topbar");
   var tabs = document.getElementById("tabs");
+  var themeBtns = [document.getElementById("theme"), document.getElementById("theme-landing")];
   var IDENTS = ["educator", "researcher"];
+  var TOAST = document.getElementById("toast");
+  var toastTimer = null;
+
+  function toast(msg) {
+    TOAST.textContent = msg;
+    TOAST.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { TOAST.classList.remove("on"); }, 1900);
+  }
 
   function identFromHash() {
     var h = location.hash.replace(/^#\/?/, "").trim();
-    if (h === "parent" || h === "teacher") h = "educator"; // 向后兼容旧深链接
+    if (h === "parent" || h === "teacher") h = "educator";
     return IDENTS.indexOf(h) > -1 ? h : "landing";
   }
 
   function render() {
     var next = identFromHash();
-
     var isLanding = next === "landing";
+
     landing.hidden = !isLanding;
     frameWrap.hidden = isLanding;
+    /* 主页不显示导航栏；进入入口后显示（房子 + 入口切换 + 分享 + 主题） */
+    topbar.hidden = isLanding;
 
-    // 顶栏 tab 高亮
     tabs.querySelectorAll(".tab").forEach(function (t) {
       t.classList.toggle("on", t.dataset.ident === next);
     });
 
     if (isLanding) {
       frame.removeAttribute("src");
-    } else if (next === "researcher") {
-      frame.src = "research/";
     } else {
-      frame.src = "practice/";
+      /* embed=1：子应用隐藏自身品牌/分享/主题控件，避免与 hub 顶栏重复 */
+      frame.src = (next === "researcher" ? "research/" : "practice/") + "?embed=1";
+      pushTheme();
     }
     window.scrollTo({ top: 0 });
   }
@@ -291,28 +459,58 @@
   });
   window.addEventListener("hashchange", render);
 
-  var themeBtn = document.getElementById("theme");
+  /* ---- 主题：切到目标态（浅色显示月亮、深色显示太阳），并同步给两个子应用 ---- */
   function applyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
-    themeBtn.textContent = t === "dark" ? "☾" : "☀";
     try {
       localStorage.setItem("hub-theme", t);
-      localStorage.setItem("atlas-theme", t); // 同步给 practice 子应用
-      localStorage.setItem("edu-nav-theme", t); // 同步给 research 子应用
+      localStorage.setItem("atlas-theme", t);
+      localStorage.setItem("edu-nav-theme", t);
     } catch (e) {}
-    // 实时通知 iframe 内的子应用同步主题（postMessage 为主，storage 事件为兜底）
+    pushTheme();
+  }
+  function pushTheme() {
     try {
       if (frame && frame.contentWindow) {
-        frame.contentWindow.postMessage({ type: "theme", theme: t }, "*");
+        frame.contentWindow.postMessage({ type: "theme", theme: document.documentElement.getAttribute("data-theme") }, "*");
       }
     } catch (e) {}
   }
-  themeBtn.addEventListener("click", function () {
-    applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  themeBtns.forEach(function (b) {
+    if (!b) return;
+    b.addEventListener("click", function () {
+      applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    });
   });
-  applyTheme(document.documentElement.getAttribute("data-theme"));
+  /* iframe 加载完成后再推一次主题，避免子应用错过早于加载的 postMessage */
+  frame.addEventListener("load", pushTheme);
+
+  /* ---- 分享：优先系统分享面板，回退复制链接 ---- */
+  document.getElementById("share").addEventListener("click", async function () {
+    var url = location.href;
+    var title = document.title;
+    if (navigator.share) {
+      try { await navigator.share({ title: title, url: url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("链接已复制，可直接分享");
+    } catch (e) {
+      var ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); toast("链接已复制，可直接分享"); }
+      catch (e2) { toast("复制失败，请手动复制地址栏链接"); }
+      document.body.removeChild(ta);
+    }
+  });
 
   render();
+  /* 首帧确定主题（localStorage 优先，默认浅色） */
+  applyTheme(document.documentElement.getAttribute("data-theme") || "light");
 })();
 </script>
 </body>

@@ -127,9 +127,7 @@
         ["#/entries", "浏览条目", "entries"],
       ]},
       { g: "深入", items: [
-        ["#/timeline", "按时间 · 时间轴", "timeline"],
-        ["#/network", "按关联 · 网络", "network"],
-        ["#/path", "按关联 · 路径", "path"],
+        ["#/timeline", "发展顺序", "timeline"],
         ["#/compare", "理论对比", "compare"],
         ["#/learning-path", "阅读路径", "learning-path"],
         ["#/glossary", "术语索引", "glossary"],
@@ -852,8 +850,6 @@
       <div class="aside-block">
         <h4>继续</h4>
         <a class="rel-item" href="#/compare?a=${e.id}&b=">⇄ 与其他条目对比</a>
-        <a class="rel-item" href="#/path?b=${e.id}">⇢ 查找到此条目的路径</a>
-        <a class="rel-item" href="#/network?focus=${e.id}">◎ 在网络中定位</a>
       </div>`;
 
     return `
@@ -888,7 +884,7 @@
             const o = S.byId[n.id];
             return `<a class="rel-pill" href="#/entry/${o.id}"><span class="rt ${n.link.type}">${linkSymbol[n.link.type]}</span>${esc(o.name)}</a>`;
           }).join("")}
-          ${rel.length > 6 ? `<a class="rel-pill" href="#/network?focus=${e.id}">+${rel.length - 6} 条 · 在网络中查看</a>` : ""}
+          ${rel.length > 6 ? `<span class="rel-pill">+${rel.length - 6} 条</span>` : ""}
         </div>` : ""}
 
         ${e.claims.length ? `<section class="dsection"><h2><span class="dot"></span>核心论断<span class="hcount">${e.claims.length}</span></h2>
@@ -1487,7 +1483,7 @@
           ${shared("agreement") || shared("disagreement") || shared("derivative") || '<div class="tc-count">无共同邻居</div>'}
         </section>
         <section class="cmp-section">
-          <div class="sec-head"><span class="sec-k">Bridge · 最短关联链</span><a class="sec-more" href="#/path?a=${a}&b=${b}">逐跳展开 →</a></div>
+          <div class="sec-head"><span class="sec-k">Bridge · 最短关联链</span></div>
           ${bridgeHtml}
         </section>`;
       }

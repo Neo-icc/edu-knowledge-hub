@@ -1,0 +1,26 @@
+/
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/index.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/practice/
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/practice/index.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/research/
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/research/index.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
