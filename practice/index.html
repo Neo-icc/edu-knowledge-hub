@@ -17,19 +17,10 @@
     })();
   </script>
 
-  <!-- 西文字体已本地化（css/fonts.css）。此处仅按需加载中文思源字体；
-       即使该请求失败或被拦截，页面也使用系统字体正常渲染。 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="preload"
-    as="style"
-    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap"
-    onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" />
-  </noscript>
-  <link rel="stylesheet" href="bundle-e557fbc8.css" />
+  <!-- 字体全部本地化：西文 Fraunces/SplineSans（woff2 本地），
+       中文走系统字体（Noto Serif SC → Songti → SimSun / Noto Sans SC → PingFang → 微软雅黑）。
+       不引用 Google Fonts——国内网络访问 fonts.googleapis.com 经常超时，会拖慢首屏。 -->
+  <link rel="stylesheet" href="bundle-f06ca1b6.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
