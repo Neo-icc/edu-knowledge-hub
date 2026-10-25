@@ -1797,16 +1797,31 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
 
 /* ---------- 场景库 ---------- */
 /* 中文筛选标签：不用西文等宽字体（mono 链无中文回退，部分设备上「身份/困扰」渲染不全），
-   改用 sans + 加粗 + nowrap，保证任何设备完整显示 */
+   改用 sans + 加粗 + nowrap，保证任何设备完整显示。
+   标签与 chips 包在 .sc-filter-group 里整体换行：老内核 flex 也不会把标签挤出可视区 */
+.sc-filter-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  min-width: 0;
+  max-width: 100%;
+}
 .sc-filter-label {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: none;
   font-family: var(--sans);
   font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1.9;
   letter-spacing: 0.02em;
   color: var(--ink-3);
-  margin-right: 0.3rem;
+  margin: 0;
   white-space: nowrap;
-  flex-shrink: 0;
+  overflow: visible;
+  text-overflow: clip;
 }
 .sc-list { display: flex; flex-direction: column; gap: var(--s2); }
 .sc-card {

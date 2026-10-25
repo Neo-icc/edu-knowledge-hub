@@ -348,12 +348,12 @@
       <h1 class="page-title">孩子这样，我该怎么办</h1>
       <p class="page-lead">${esc(intro)}</p>
       <div class="filter-bar" style="margin-top:0.9rem">
-        <span class="sc-filter-label">身份</span>${audChips}
-        <span class="sc-filter-label" style="margin-left:0.6rem">年龄</span>${ageChips}
+        <span class="sc-filter-group"><span class="sc-filter-label">身份</span>${audChips}</span>
+        <span class="sc-filter-group" style="margin-left:0.6rem"><span class="sc-filter-label">年龄</span>${ageChips}</span>
         <span class="filter-meta">${list.length} 个情境</span>
       </div>
       <div class="filter-bar" style="margin-top:0.5rem">
-        <span class="sc-filter-label">困扰</span>${concernChips}
+        <span class="sc-filter-group"><span class="sc-filter-label">困扰</span>${concernChips}</span>
       </div>
       <div class="pick-bar no-print" style="margin-top:0.9rem">
         <div class="pick-head">

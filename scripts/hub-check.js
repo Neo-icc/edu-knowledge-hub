@@ -144,6 +144,36 @@ const ok = (name, detail, cond) => {
     ok("时间轴已改名", (nav.deep || [])[0] || "", (nav.deep || [])[0] === "发展顺序");
   }
 
+  console.log("\n=== 3b. 场景库筛选标签（身份/年龄/困扰 完整显示） ===\n");
+  await run(`document.getElementById("frame").contentWindow.location.hash = "#/scenarios"`);
+  await sleep(900);
+  const flt = await J(`(()=>{
+    const f = document.getElementById("frame").contentDocument;
+    if(!f) return JSON.stringify({noFrame:true});
+    const labels = [...f.querySelectorAll(".sc-filter-label")];
+    return JSON.stringify({
+      count: labels.length,
+      texts: labels.map(e=>e.textContent.trim()),
+      groups: f.querySelectorAll(".sc-filter-group").length,
+      ok: labels.map(el => {
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        return { text: el.textContent.trim(), visible: cs.display !== "none" && r.width > 0,
+          full: el.scrollWidth <= r.width + 0.5, inView: r.left >= -0.5 && r.right <= innerWidth + 0.5,
+          font: cs.fontFamily.split(",")[0].replace(/"/g,""), shrink: cs.flexShrink };
+      })
+    });
+  })()`);
+  if (flt.noFrame) ok("筛选标签", "无法访问（同源失败）", false);
+  else {
+    ok("筛选标签数量", `${flt.count} 个（${(flt.texts || []).join("/")}）`, flt.count === 3 && (flt.texts || []).join("/") === "身份/年龄/困扰");
+    ok("标签完整渲染", JSON.stringify((flt.ok || []).map(o => `${o.text}:${o.visible && o.full && o.inView ? "✓" : "✗"}`)), (flt.ok || []).every(o => o.visible && o.full && o.inView));
+    ok("标签字体为 sans 非 mono", JSON.stringify((flt.ok || []).map(o => o.font)), (flt.ok || []).every(o => o.font === "Spline Sans"));
+    ok("标签分组结构", `${flt.groups} 组`, flt.groups === 3);
+  }
+  await run(`document.getElementById("frame").contentWindow.location.hash = ""`);
+  await sleep(400);
+
   console.log("\n=== 4. 主题同步（hub → practice iframe） ===\n");
   const before = await run(`document.getElementById("frame").contentDocument.documentElement.getAttribute("data-theme")`);
   await run(`document.getElementById("theme").click()`);
