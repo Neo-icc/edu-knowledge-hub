@@ -706,32 +706,78 @@
     return out;
   }
 
-  /* 转发一条情境：输出带哲言/水印/二维码的打印图，优先调起系统分享（可发微信），
-     回退下载图片并提示 */
-  function shareScenario(id) {
+  /* 生成转发图（带哲言/水印/二维码），回调 dataURL（供预览与保存共用） */
+  function generateShareImage(id, cb) {
     const built = buildScenarioDoc(id);
     if (!built) return;
     const canvas = drawShareFooter(renderSheetImage(built.doc), built.s);
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob((blob) => {
       if (!blob) { shareToast("图片生成失败，请重试"); return; }
-      const file = new File([blob], built.doc.filename, { type: "image/png" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: built.doc.title });
-          shareToast("已调起分享，选择微信即可发送");
-          return;
-        } catch (e) { /* 用户取消或失败，回退下载 */ }
+      const fr = new FileReader();
+      fr.onload = () => cb(fr.result);
+      fr.readAsDataURL(blob);
+    }, "image/png");
+  }
+
+  /* 转发面板：①转发链接（系统分享面板可选微信，回退复制链接）；
+     ②生成图片预览（可保存/长按发送）。与「存为图片」区分：转发以链接为主 */
+  function openSharePanel(id) {
+    const s = S.scenarioById[id];
+    if (!s) return;
+    const url = "https://www.epck.space/practice/#/scenario/" + id;
+    let panel = document.getElementById("sc-share-pop");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "sc-share-pop";
+      document.body.appendChild(panel);
+    }
+    panel.innerHTML = `
+      <div class="sp-overlay" data-close></div>
+      <div class="sp-card" role="dialog" aria-modal="true" aria-label="转发这一条">
+        <div class="sp-head"><b>转发这一条</b><button class="sp-close" data-close aria-label="关闭">✕</button></div>
+        <p class="sp-title">${esc(s.title)}</p>
+        <button class="sp-btn primary" data-act="link">${SHARE_ICO}转发链接给微信好友</button>
+        <button class="sp-btn" data-act="image">${PRINTER_ICO}生成图片预览</button>
+        <div class="sp-preview" hidden>
+          <img alt="情境分享图预览">
+          <p class="sp-hint">长按图片可保存或发送；图底部含教育哲言、站点水印与回到本页的二维码</p>
+          <button class="sp-btn" data-act="save">${PRINTER_ICO}保存图片</button>
+        </div>
+      </div>`;
+    panel.classList.add("on");
+    panel.querySelectorAll("[data-close]").forEach((el) => {
+      el.addEventListener("click", () => panel.classList.remove("on"));
+    });
+    panel.querySelector('[data-act="link"]').addEventListener("click", async () => {
+      const text = "教育与心智知识图谱 · " + s.title;
+      if (navigator.share) {
+        try { await navigator.share({ title: text, text: text, url: url }); return; } catch (e) { /* 取消或失败，回退复制 */ }
       }
-      const url = URL.createObjectURL(blob);
+      try {
+        await navigator.clipboard.writeText(url);
+        shareToast("链接已复制，请到微信粘贴发送");
+      } catch (e) {
+        shareToast("请复制地址栏链接发送给朋友");
+      }
+    });
+    panel.querySelector('[data-act="image"]').addEventListener("click", () => {
+      const preview = panel.querySelector(".sp-preview");
+      const img = preview.querySelector("img");
+      if (img.src && img.src.startsWith("data:")) { preview.hidden = false; return; }
+      generateShareImage(id, (dataUrl) => {
+        img.src = dataUrl;
+        preview.hidden = false;
+      });
+    });
+    panel.querySelector('[data-act="save"]').addEventListener("click", () => {
       const a = document.createElement("a");
-      a.href = url;
-      a.download = built.doc.filename.replace(".png", "-分享版.png");
+      a.href = panel.querySelector(".sp-preview img").src;
+      a.download = "情境卡-" + id + "-分享版.png";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
-      shareToast("分享图已保存，请到微信发送给朋友");
-    }, "image/png");
+      shareToast("图片已保存，请到微信发送");
+    });
   }
 
   /* 轻量提示条 */
@@ -2056,7 +2102,7 @@
 
     /* 转发一条情境：生成带哲言/水印/二维码的分享图 */
     document.querySelectorAll("[data-share-sc]").forEach((el) => {
-      el.addEventListener("click", () => shareScenario(el.dataset.shareSc));
+      el.addEventListener("click", () => openSharePanel(el.dataset.shareSc));
     });
     document.querySelectorAll("[data-sc-concern]").forEach((el) => {
       el.addEventListener("click", () => {

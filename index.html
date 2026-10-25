@@ -292,6 +292,38 @@
   }
   #toast.on { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
 
+  /* 分享弹层 */
+  #sharepop { position: fixed; inset: 0; z-index: 70; }
+  .sharepop-ov { position: absolute; inset: 0; background: oklch(12% 0.01 75 / 0.45); }
+  .sharepop-card {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(380px, calc(100vw - 32px)); max-height: 88vh; overflow-y: auto;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 16px;
+    padding: 18px 18px 20px; box-shadow: var(--shadow);
+  }
+  .sharepop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .sharepop-close { border: none; background: none; font-size: 1.1rem; color: var(--ink3); cursor: pointer; padding: 2px 6px; }
+  .sharepop-url {
+    font-size: 0.8rem; color: var(--ink3); background: var(--bg2);
+    border-radius: 8px; padding: 8px 10px; margin-bottom: 12px;
+    word-break: break-all; line-height: 1.5;
+  }
+  .sharepop-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+  .sharepop-btn {
+    flex: 1; padding: 10px 12px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--rule); background: var(--bg); color: var(--ink);
+    font-size: 0.9rem; transition: border-color .16s ease;
+  }
+  .sharepop-btn:hover { border-color: var(--accent); }
+  .sharepop-btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .sharepop-btn.primary:hover { opacity: .92; }
+  .sharepop-qr { text-align: center; }
+  .sharepop-qr canvas {
+    width: 180px; height: 180px; border-radius: 8px;
+    border: 1px solid var(--rule); padding: 6px; background: #fff;
+  }
+  .sharepop-qr-hint { font-size: 0.78rem; color: var(--ink5); margin-top: 8px; }
+
   @media (max-width: 720px) {
     .topbar { padding: 0 10px; gap: 8px; height: 56px; }
     .icon-round { width: 40px; height: 40px; flex-basis: 40px; }
@@ -304,9 +336,255 @@
     .frame-wrap { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
   }
 </style>
+<script>
+/* ============ 极简 QR 码编码器（字节模式 / ECC M / 版本 1–10，零依赖） ============ */
+"use strict";
+function qrEncode(text, fixedMask){
+  const EXP = new Array(512), LOG = new Array(256);
+  { let x = 1;
+    for(let i = 0; i < 255; i++){ EXP[i] = x; LOG[x] = i; x <<= 1; if(x & 0x100) x ^= 0x11d; }
+    for(let i = 255; i < 512; i++) EXP[i] = EXP[i-255]; }
+  const gmul = (a,b)=> (a && b) ? EXP[LOG[a]+LOG[b]] : 0;
+  function rsGen(deg){
+    let g = [1];
+    for(let i = 0; i < deg; i++){
+      const ng = new Array(g.length+1).fill(0);
+      for(let j = 0; j < g.length; j++){
+        ng[j]   ^= g[j];               
+        ng[j+1] ^= gmul(g[j], EXP[i]); 
+      }
+      g = ng;
+    }
+    return g;
+  }
+  function rsEncode(data, ecLen){
+    const gen = rsGen(ecLen);
+    const res = data.concat(new Array(ecLen).fill(0));
+    for(let i = 0; i < data.length; i++){
+      const f = res[i];
+      if(!f) continue;
+      for(let j = 0; j < gen.length; j++) res[i+j] ^= gmul(gen[j], f);
+    }
+    return res.slice(data.length);
+  }
+  const CAP = [0,14,26,42,62,84,106,122,152,180,213];
+  const BLOCKS = {
+    1:[[26,16]], 2:[[44,28]], 3:[[70,44]], 4:[[50,32],[50,32]],
+    5:[[67,43],[67,43]], 6:[[43,27],[43,27],[43,27],[43,27]],
+    7:[[49,31],[49,31],[49,31],[49,31]],
+    8:[[60,38],[60,38],[61,39],[61,39]],
+    9:[[58,36],[58,36],[58,36],[59,37],[59,37]],
+    10:[[69,43],[69,43],[69,43],[69,43],[70,44]],
+  };
+  const ALIGN = {
+    1:[], 2:[6,18], 3:[6,22], 4:[6,26], 5:[6,30],
+    6:[6,34], 7:[6,22,38], 8:[6,24,42], 9:[6,26,46], 10:[6,28,50],
+  };
+  let v = 10;
+  const byteLen = (()=>{ let n=0;
+    for(const ch of text){ const c=ch.codePointAt(0);
+      n += c<0x80?1 : c<0x800?2 : 3; } return n; })();
+  for(let i = 1; i <= 10; i++){ if(byteLen <= CAP[i]){ v = i; break; } }
+  if(byteLen > CAP[10]) return null;
+  const size = 17 + 4*v;
+  const blocks = BLOCKS[v];
+  const totalData = blocks.reduce((s,b)=> s+b[1], 0);
+  const bits = [];
+  const push = (val, len)=>{ for(let i = len-1; i >= 0; i--) bits.push((val>>i)&1); };
+  push(0b0100, 4);
+  push(byteLen, v < 10 ? 8 : 16);
+  for(const ch of text){
+    const c = ch.codePointAt(0);
+    if(c < 0x80) push(c, 8);
+    else if(c < 0x800){ push(0xC0|(c>>6),8); push(0x80|(c&63),8); }
+    else { push(0xE0|(c>>12),8); push(0x80|((c>>6)&63),8); push(0x80|(c&63),8); }
+  }
+  const capBits = totalData*8;
+  if(bits.length < capBits){
+    const t = Math.min(4, capBits-bits.length);
+    for(let i = 0; i < t; i++) bits.push(0);
+  }
+  while(bits.length % 8) bits.push(0);
+  const dataCW = [];
+  for(let i = 0; i < bits.length; i += 8){
+    let x = 0;
+    for(let j = 0; j < 8; j++) x = (x<<1) | bits[i+j];
+    dataCW.push(x);
+  }
+  for(let i = 0; dataCW.length < totalData; i++) dataCW.push(i%2 ? 0x11 : 0xEC);
+  const dblocks = [], eblocks = [];
+  let off = 0;
+  for(const [tot, dc] of blocks){
+    const seg = dataCW.slice(off, off+dc);
+    dblocks.push(seg);
+    eblocks.push(rsEncode(seg, tot-dc));
+    off += dc;
+  }
+  const codewords = [];
+  const maxD = Math.max(...dblocks.map(x=>x.length));
+  for(let i = 0; i < maxD; i++) for(const db of dblocks) if(i < db.length) codewords.push(db[i]);
+  const maxE = Math.max(...eblocks.map(x=>x.length));
+  for(let i = 0; i < maxE; i++) for(const eb of eblocks) if(i < eb.length) codewords.push(eb[i]);
+  const M = Array.from({length:size}, ()=> new Array(size).fill(null));
+  const F = Array.from({length:size}, ()=> new Array(size).fill(false));
+  const setF = (r,c,val)=>{ if(r>=0&&c>=0&&r<size&&c<size){ M[r][c]=val; F[r][c]=true; } };
+  for(const [fr,fc] of [[0,0],[0,size-7],[size-7,0]]){
+    for(let i = -1; i <= 7; i++) for(let j = -1; j <= 7; j++){
+      const rr = fr+i, cc = fc+j;
+      if(rr<0||cc<0||rr>=size||cc>=size) continue;
+      const inF = i>=0 && i<=6 && j>=0 && j<=6;
+      const ring = inF && (i===0||i===6||j===0||j===6);
+      const core = i>=2 && i<=4 && j>=2 && j<=4;
+      setF(rr, cc, (ring||core) ? 1 : 0);
+    }
+  }
+  for(let i = 8; i < size-8; i++){ setF(6,i,(i%2===0)?1:0); setF(i,6,(i%2===0)?1:0); }
+  for(const r of ALIGN[v]) for(const c of ALIGN[v]){
+    if((r<=8&&c<=8)||(r<=8&&c>=size-9)||(r>=size-9&&c<=8)) continue;
+    for(let i = -2; i <= 2; i++) for(let j = -2; j <= 2; j++){
+      const d = Math.max(Math.abs(i),Math.abs(j));
+      setF(r+i, c+j, d===2 ? 1 : (d===1 ? 0 : 1));
+    }
+  }
+  setF(size-8, 8, 1);
+  for(let i = 0; i < 15; i++){
+    let r;
+    if(i < 6) r = i;
+    else if(i < 8) r = i + 1;
+    else r = size - 15 + i;
+    setF(r, 8, 0);
+  }
+  for(let i = 0; i < 15; i++){
+    let c;
+    if(i < 8) c = size - 1 - i;
+    else if(i < 9) c = 7;
+    else c = 14 - i;
+    setF(8, c, 0);
+  }
+  if(v >= 7){
+    for(let i = 0; i < 18; i++){
+      const a = size - 11 + (i % 3);
+      const b = Math.floor(i / 3);
+      setF(a, b, 0);
+      setF(b, a, 0);
+    }
+  }
+  const totalBits = codewords.length*8;
+  let bitPos = 0;
+  for(let col = size-1; col > 0; col -= 2){
+    if(col === 6) col--;
+    for(let k = 0; k < size; k++){
+      const r = (Math.floor((size-1-col)/2)%2===0) ? size-1-k : k;
+      for(let dc = 0; dc < 2; dc++){
+        const c = col-dc;
+        if(F[r][c]) continue;
+        const bit = bitPos < totalBits ? ((codewords[bitPos>>3] >> (7-(bitPos&7)))&1) : 0;
+        M[r][c] = bit; bitPos++;
+      }
+    }
+  }
+  function penalty(mat){
+    let p = 0;
+    const rowRuns = (arr)=>{ let run=1;
+      for(let i=1;i<=arr.length;i++){
+        if(i<arr.length && arr[i]===arr[i-1]) run++;
+        else { if(run>=5) p += run-2; run=1; } } };
+    for(let r=0;r<size;r++) rowRuns(mat[r]);
+    for(let c=0;c<size;c++){ const colA=[]; for(let r=0;r<size;r++) colA.push(mat[r][c]); rowRuns(colA); }
+    for(let r=0;r<size-1;r++) for(let c=0;c<size-1;c++)
+      if(mat[r][c]===mat[r][c+1]&&mat[r][c]===mat[r+1][c]&&mat[r][c]===mat[r+1][c+1]) p+=3;
+    const seq = a=> a[0]&&!a[1]&&a[2]&&a[3]&&a[4]&&!a[5]&&a[6];
+    for(let r=0;r<size;r++){
+      for(let c=0;c<size-10;c++){
+        const a=mat[r].slice(c,c+11);
+        if(seq(a)&&!a.slice(7).some(Boolean)) p+=40;
+        if(!a.slice(0,4).some(Boolean)&&seq(a.slice(4))) p+=40;
+        if(mat[r][c+10]) c++;   
+      }
+    }
+    for(let c=0;c<size;c++){
+      for(let r=0;r<size-10;r++){
+        const a=[]; for(let i=0;i<11;i++) a.push(mat[r+i][c]);
+        if(seq(a)&&!a.slice(7).some(Boolean)) p+=40;
+        if(!a.slice(0,4).some(Boolean)&&seq(a.slice(4))) p+=40;
+        if(mat[r+10][c]) r++;
+      }
+    }
+    let dark=0; for(const row of mat) for(const x of row) if(x) dark++;
+    p += Math.floor(Math.abs(dark/(size*size)*100 - 50)/5)*10;
+    return p;
+  }
+  const maskFn = [
+    (i,j)=> (i+j)%2===0, (i,j)=> i%2===0, (i,j)=> j%3===0, (i,j)=> (i+j)%3===0,
+    (i,j)=> (Math.floor(i/2)+Math.floor(j/3))%2===0,
+    (i,j)=> (i*j)%2+(i*j)%3===0, (i,j)=> ((i*j)%2+(i*j)%3)%2===0,
+    (i,j)=> ((i+j)%2+(i*j)%3)%2===0,
+  ];
+  function fmtBits(data5){
+    let d = data5 << 10;
+    for(let i = 14; i >= 10; i--) if(d & (1<<i)) d ^= 0x537 << (i-10);
+    return ((data5<<10) | d) ^ 0x5412;
+  }
+  function placeFormat(mat, mask){
+    const fmt = fmtBits((0b00 << 3) | mask);
+    const fb = i => (fmt >> i) & 1;
+    for(let i = 0; i < 15; i++){
+      let r;
+      if(i < 6) r = i;
+      else if(i < 8) r = i + 1;
+      else r = size - 15 + i;
+      mat[r][8] = fb(i);
+    }
+    for(let i = 0; i < 15; i++){
+      let c;
+      if(i < 8) c = size - 1 - i;
+      else if(i < 9) c = 7;
+      else c = 14 - i;
+      mat[8][c] = fb(i);
+    }
+    mat[size-8][8] = 1;
+  }
+  let verInfo = 0;
+  if(v >= 7){
+    let d = v << 12;
+    for(let i = 17; i >= 12; i--) if(d & (1<<i)) d ^= 0x1F25 << (i-12);
+    verInfo = (v<<12) | d;
+  }
+  function placeVersion(mat){
+    if(!verInfo) return;
+    for(let i = 0; i < 18; i++){
+      const bit = (verInfo >> i) & 1;
+      const a = size - 11 + (i % 3);
+      const b = Math.floor(i / 3);
+      mat[a][b] = bit;
+      mat[b][a] = bit;
+    }
+  }
+  let bestMask = 0, bestP = Infinity, bestMat = null;
+  for(let m = 0; m < 8; m++){
+    const t = M.map(row=>row.slice());
+    for(let i=0;i<size;i++) for(let j=0;j<size;j++)
+      if(!F[i][j]) t[i][j] ^= maskFn[m](i,j) ? 1 : 0;
+    const pf = penalty(t);
+    if(pf < bestP){ bestP = pf; bestMask = m; bestMat = t; }
+  }
+  placeFormat(bestMat, bestMask);
+  placeVersion(bestMat);
+  if(typeof fixedMask === "number" && fixedMask >= 0 && fixedMask < 8){
+    const t = M.map(row=>row.slice());
+    for(let i=0;i<size;i++) for(let j=0;j<size;j++)
+      if(!F[i][j]) t[i][j] ^= maskFn[fixedMask](i,j) ? 1 : 0;
+    placeFormat(t, fixedMask);
+    placeVersion(t);
+    bestMask = fixedMask; bestMat = t;
+  }
+  return { size, matrix: bestMat, version: v, mask: bestMask };
+}
+if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode }; }
+</script>
   <link rel="prefetch" href="practice/bundle-data-8fc1fbaf.js" as="script" />
-  <link rel="prefetch" href="practice/bundle-app-933e933f.js" as="script" />
-  <link rel="prefetch" href="practice/bundle-26e010c1.css" as="style" />
+  <link rel="prefetch" href="practice/bundle-app-039569ee.js" as="script" />
+  <link rel="prefetch" href="practice/bundle-914d585f.css" as="style" />
 </head>
 <body>
   <header class="topbar" id="topbar" hidden>
@@ -403,6 +681,26 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
+  <!-- 分享弹层：复制链接 / 转发微信 / 当前页二维码（分享的就是用户正在浏览的页面） -->
+  <div id="sharepop" hidden>
+    <div class="sharepop-ov" data-close></div>
+    <div class="sharepop-card" role="dialog" aria-modal="true" aria-label="分享此页">
+      <div class="sharepop-head">
+        <b>分享此页</b>
+        <button class="sharepop-close" data-close aria-label="关闭">✕</button>
+      </div>
+      <p class="sharepop-url" id="sharepop-url"></p>
+      <div class="sharepop-actions">
+        <button class="sharepop-btn primary" id="share-copy">复制链接</button>
+        <button class="sharepop-btn" id="share-wechat">转发给微信好友</button>
+      </div>
+      <div class="sharepop-qr">
+        <canvas id="sharepop-qr" width="360" height="360" aria-label="当前页面二维码"></canvas>
+        <p class="sharepop-qr-hint">手机扫一扫，在手机上打开当前页面再转发</p>
+      </div>
+    </div>
+  </div>
+
 <script>
 (function () {
   var frame = document.getElementById("frame");
@@ -494,13 +792,34 @@
   /* iframe 加载完成后再推一次主题，避免子应用错过早于加载的 postMessage */
   frame.addEventListener("load", pushTheme);
 
-  /* ---- 分享：优先系统分享面板，回退复制链接 ---- */
-  document.getElementById("share").addEventListener("click", async function () {
+  /* ---- 分享弹层：分享的就是当前正在浏览的页面（URL 含入口 hash） ---- */
+  var sharepop = document.getElementById("sharepop");
+  function drawShareQR() {
+    var cv = document.getElementById("sharepop-qr");
+    var ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    try {
+      var m = qrEncode(location.href);
+      var cell = cv.width / m.size;
+      ctx.fillStyle = "#17140f";
+      for (var y = 0; y < m.size; y++) {
+        for (var x = 0; x < m.size; x++) {
+          if (m.matrix[y][x]) ctx.fillRect(x * cell, y * cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    } catch (e) { /* 二维码生成失败时保留空白区域 */ }
+  }
+  document.getElementById("share").addEventListener("click", function () {
+    document.getElementById("sharepop-url").textContent = location.href;
+    drawShareQR();
+    sharepop.hidden = false;
+  });
+  sharepop.querySelectorAll("[data-close]").forEach(function (el) {
+    el.addEventListener("click", function () { sharepop.hidden = true; });
+  });
+  document.getElementById("share-copy").addEventListener("click", async function () {
     var url = location.href;
-    var title = document.title;
-    if (navigator.share) {
-      try { await navigator.share({ title: title, url: url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
-    }
     try {
       await navigator.clipboard.writeText(url);
       toast("链接已复制，可直接分享");
@@ -514,6 +833,24 @@
       try { document.execCommand("copy"); toast("链接已复制，可直接分享"); }
       catch (e2) { toast("复制失败，请手动复制地址栏链接"); }
       document.body.removeChild(ta);
+    }
+  });
+  document.getElementById("share-wechat").addEventListener("click", async function () {
+    var url = location.href;
+    var title = document.title;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: title, url: url });
+        toast("已调起分享，选择微信即可发送");
+        return;
+      } catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    /* 不支持系统分享的环境：复制链接并提示到微信粘贴 */
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("链接已复制，请到微信粘贴发送");
+    } catch (e) {
+      toast("请复制地址栏链接，到微信发送");
     }
   });
 

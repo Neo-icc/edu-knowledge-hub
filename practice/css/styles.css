@@ -780,6 +780,7 @@ h1.page-title {
   top: 49px;
   background: var(--paper);
   z-index: 30;
+  overflow: visible;
 }
 .chip {
   display: inline-flex;
@@ -1792,13 +1793,17 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
 .sc-mini-go { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-5); }
 
 /* ---------- 场景库 ---------- */
+/* 中文筛选标签：不用西文等宽字体（mono 链无中文回退，部分设备上「身份/困扰」渲染不全），
+   改用 sans + 加粗 + nowrap，保证任何设备完整显示 */
 .sc-filter-label {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-5);
-  margin-right: 0.2rem;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  margin-right: 0.3rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .sc-list { display: flex; flex-direction: column; gap: var(--s2); }
 .sc-card {
@@ -1934,6 +1939,53 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   max-width: 86vw; text-align: center;
 }
 #sc-toast.on { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+
+/* ---- 转发面板（sc-share-pop） ---- */
+#sc-share-pop { position: fixed; inset: 0; z-index: 200; display: none; }
+#sc-share-pop.on { display: block; }
+#sc-share-pop .sp-overlay {
+  position: absolute; inset: 0;
+  background: oklch(12% 0.01 75 / 0.45);
+  animation: fadeIn var(--t-fast) var(--ease);
+}
+#sc-share-pop .sp-card {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(400px, calc(100vw - 32px));
+  max-height: 86vh; overflow-y: auto;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  padding: 18px 18px 20px;
+  box-shadow: var(--shadow);
+  animation: popIn var(--t-mid) var(--ease);
+}
+#sc-share-pop .sp-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 1rem; margin-bottom: 6px;
+}
+#sc-share-pop .sp-close {
+  border: none; background: none; font-size: 1.1rem; line-height: 1;
+  color: var(--ink-3); cursor: pointer; padding: 2px 6px;
+}
+#sc-share-pop .sp-title { font-size: 0.88rem; color: var(--ink-2); margin-bottom: 14px; }
+#sc-share-pop .sp-btn {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%; padding: 11px 14px; margin-bottom: 9px;
+  border: 1px solid var(--rule); border-radius: 10px;
+  background: var(--bg); color: var(--ink);
+  font-size: 0.92rem; cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+#sc-share-pop .sp-btn:hover { border-color: var(--accent); }
+#sc-share-pop .sp-btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+#sc-share-pop .sp-btn.primary:hover { opacity: .92; }
+#sc-share-pop .sp-preview { margin-top: 4px; text-align: center; }
+#sc-share-pop .sp-preview img {
+  max-width: 100%; border-radius: 10px; border: 1px solid var(--rule);
+}
+#sc-share-pop .sp-hint { font-size: 0.78rem; color: var(--ink-3); margin: 10px 0 12px; line-height: 1.6; }
 .sheet-actions {
   display: flex;
   align-items: center;
