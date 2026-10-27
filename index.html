@@ -755,8 +755,11 @@ if(typeof module !== "undefined" && module.exports){ module.exports = { qrEncode
     if (isLanding) {
       frame.removeAttribute("src");
     } else {
-      /* embed=1：子应用隐藏自身品牌/分享/主题控件，避免与 hub 顶栏重复 */
-      frame.src = (next === "researcher" ? "research/" : "practice/") + "?embed=1";
+      /* embed=1：子应用隐藏自身品牌/分享/主题控件，避免与 hub 顶栏重复
+         v=：构建版本号。子应用 HTML 每次构建都会换 bundle 指纹，旧 HTML 引用的
+         旧 bundle 会被删除；手机端（微信 X5 内核尤其）可能仍缓存旧 HTML 导致白屏。
+         带上版本参数后每次进入都是新地址，彻底绕开本地缓存。发版时改这个数字。 */
+      frame.src = (next === "researcher" ? "research/" : "practice/") + "?embed=1&v=20261027";
       pushTheme();
     }
     window.scrollTo({ top: 0 });
