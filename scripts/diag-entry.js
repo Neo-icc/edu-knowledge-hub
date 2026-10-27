@@ -67,7 +67,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     expression: `(()=>{const b=document.querySelector('[data-ident="parent"]')||document.querySelector('.ident');if(b){b.click();return 'clicked'}return 'no button'})()`,
     returnByValue: true,
   });
-  await sleep(5000);
+  await sleep(14000);
 
   const out = await send("Runtime.evaluate", {
     expression: `(()=>{
