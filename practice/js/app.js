@@ -190,13 +190,13 @@
 
   function shellHTML(active, inner, crumb) {
     return `
-    <button class="fold-float" id="fold-float" aria-label="展开侧栏" title="展开侧栏">☰<span>展开侧栏</span></button>
     <div class="app-shell ${state.navOpen ? "nav-open" : ""}">
       ${sidebarHTML(active)}
       ${state.navOpen ? '<div class="nav-scrim" id="nav-scrim"></div>' : ""}
       <div class="main">
         <div class="topbar">
           <button class="icon-btn mobile-only" id="nav-btn" aria-label="打开导航">☰</button>
+          <button class="fold-float" id="fold-float" aria-label="展开侧栏" title="展开侧栏">☰<span>展开侧栏</span></button>
           <div class="crumb">${crumb || '<span class="cur">概览</span>'}</div>
           <div class="topbar-actions">
             <button class="icon-btn" id="open-search-2" aria-label="搜索" title="搜索 (Ctrl K)">⌕</button>

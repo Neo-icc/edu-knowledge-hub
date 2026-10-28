@@ -296,9 +296,16 @@ const ok = (name, detail, cond) => {
         const r=el.getBoundingClientRect(), s=w.getComputedStyle(el);
         if(r.width>140 && s.display!=="none"){ sidebarVisible=true; break; }
       }
+      let bodyIntrude=0;
+      const bodyEl=f.querySelector("#main,.main-inner,.view");
+      if(fr&&bodyEl){
+        const bbr=bodyEl.getBoundingClientRect();
+        bodyIntrude=Math.round(Math.max(0,fr.bottom-bbr.top)*10)/10;
+      }
       return JSON.stringify({mainW:mr?R(mr.width):null, sidebarVisible,
         floatW:fr?R(fr.width):0, floatH:fr?R(fr.height):0,
         floatLeft:fr?R(fr.left):null, floatTop:fr?R(fr.top):null,
+        bodyIntrude:bodyIntrude,
         bodyClass:f.body.className, key:w.localStorage.getItem("edu-nav-fold")});
     })()`);
     return { open, shut };
@@ -326,7 +333,9 @@ const ok = (name, detail, cond) => {
   ok("折叠后侧栏隐藏", `家长=${!navP.shut.sidebarVisible} 研究=${!navR.shut.sidebarVisible}`,
      navP.shut.sidebarVisible === false && navR.shut.sidebarVisible === false);
   const flGap = Math.abs(navP.shut.floatW - navR.shut.floatW) + Math.abs(navP.shut.floatH - navR.shut.floatH);
-  ok("悬浮展开按钮一致", `${navP.shut.floatW}×${navP.shut.floatH} vs ${navR.shut.floatW}×${navR.shut.floatH}`, flGap < 0.6);
+  ok("折叠态展开按钮尺寸一致", `${navP.shut.floatW}×${navP.shut.floatH} vs ${navR.shut.floatW}×${navR.shut.floatH}`, flGap < 0.6);
+  ok("展开按钮不遮挡正文", `入侵 ${navP.shut.bodyIntrude} / ${navR.shut.bodyIntrude}px`,
+     navP.shut.bodyIntrude <= 0.6 && navR.shut.bodyIntrude <= 0.6);
   ok("折叠状态类一致", `家长=${navP.shut.bodyClass} 研究=${navR.shut.bodyClass}`,
      /(^|\s)nav-fold(\s|$)/.test(navP.shut.bodyClass) && /(^|\s)nav-fold(\s|$)/.test(navR.shut.bodyClass));
   ok("折叠状态键一致", `家长=${navP.shut.key} 研究=${navR.shut.key}`,

@@ -355,9 +355,11 @@ img, svg { display: block; max-width: 100%; }
 
 .mobile-only { display: none; }
 
-/* 桌面端：practice 顶栏隐藏，导航与搜索由侧栏承担，避免与门户顶栏叠成两行 */
+/* 桌面端：practice 顶栏隐藏，导航与搜索由侧栏承担，避免与门户顶栏叠成两行；
+   但折叠态（侧栏收起）恢复顶栏——「展开侧栏」按钮在顶栏流内，正文自然让位，不再悬浮遮挡 */
 @media (min-width: 861px) {
   .topbar { display: none; }
+  body.nav-fold .topbar { display: flex; }
 }
 
 /* ---------- 排版 ---------- */
@@ -2541,11 +2543,10 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   body.nav-fold .sidebar { display: none; }
   .fold-float { display: none; }
   body.nav-fold .fold-float {
-    position: fixed; left: 14px; top: 14px; z-index: 130;
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 12px; border: 1px solid var(--rule-2); border-radius: 999px;
-    background: var(--paper); color: var(--ink-2); cursor: pointer;
-    box-shadow: var(--shadow-3); font-size: 0.85rem;
+    padding: 4px 10px; border: 1px solid var(--rule-2); border-radius: 999px;
+    background: transparent; color: var(--ink-2); cursor: pointer;
+    font-size: 0.85rem; line-height: 1.7; flex: 0 0 auto;
   }
   body.nav-fold .fold-float:hover { border-color: var(--accent); color: var(--accent); }
 }
