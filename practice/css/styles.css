@@ -319,14 +319,20 @@ img, svg { display: block; max-width: 100%; }
   position: sticky;
   top: 0;
   z-index: 40;
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-  padding: var(--s3) var(--gut);
+  padding: 0;
   background: color-mix(in oklch, var(--paper) 88%, transparent);
   backdrop-filter: blur(12px) saturate(1.1);
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
   border-bottom: 1px solid var(--rule);
+}
+.topbar-in {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--gut);
 }
 .crumb {
   display: flex;
@@ -2578,7 +2584,7 @@ mark { background: var(--accent-soft); color: var(--ink); padding: 0 1px; border
   .mobile-only { display: inline-flex; }
   .nb-label { display: none; }
   .main-inner { padding: var(--s4) var(--s4) var(--s8); }
-  .topbar { padding: var(--s2) var(--s4); }
+  .topbar-in { padding: var(--s2) var(--s4); }
   /* 窄屏：筛选区改为三行后高度占视口近半，吸顶会大面积遮挡正文，改为随页滚动 */
   .filter-bar { position: static; }
 }

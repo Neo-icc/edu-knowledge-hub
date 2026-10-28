@@ -343,7 +343,38 @@ const ok = (name, detail, cond) => {
   await run(`localStorage.removeItem("edu-nav-fold"); location.hash = "#/";`);
   await sleep(400);
 
-  console.log("\n=== 8. 移动端 390×844 ===\n");
+  console.log("\n=== 8. 宽屏内容居中（1920 视口） ===\n");
+  await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await sleep(500);
+  await run("document.querySelector('[data-ident=\"researcher\"]').click();");
+  await sleep(2500);
+  const cen = await J(`(()=>{
+    const f=document.getElementById("frame").contentDocument, w=f.defaultView, R=n=>Math.round(n*10)/10;
+    const main=f.querySelector("main"); const mr=main.getBoundingClientRect();
+    const mc=R(mr.left+mr.width/2);
+    const t=[...f.querySelectorAll(".tab")].find(x=>x.dataset.view==="timeline"); if(t)t.click();
+    return JSON.stringify({mainCenter:mc});
+  })()`);
+  await sleep(500);
+  const cen2 = await J(`(()=>{
+    const f=document.getElementById("frame").contentDocument, w=f.defaultView, R=n=>Math.round(n*10)/10;
+    const v=[...f.querySelectorAll(".view")].find(x=>w.getComputedStyle(x).display!=="none");
+    const tb=f.querySelector(".topbar-in");
+    const out={};
+    if(v){const r=v.getBoundingClientRect(); out.tlCenter=R(r.left+r.width/2); out.tlW=R(r.width);}
+    if(tb){const r=tb.getBoundingClientRect(); out.tbCenter=R(r.left+r.width/2);}
+    return JSON.stringify(out);
+  })()`);
+  const gapTl = Math.abs((cen2.tlCenter||0) - cen.mainCenter);
+  const gapTb = Math.abs((cen2.tbCenter||0) - cen.mainCenter);
+  ok("时间线视图居中", `中心偏差 ${gapTl}px · 宽 ${cen2.tlW}`, gapTl < 2 && cen2.tlW === 1240);
+  ok("顶栏内容居中", `中心偏差 ${gapTb}px`, gapTb < 2);
+  await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(400);
+  await run('location.hash = "#/";');
+  await sleep(500);
+
+  console.log("\n=== 9. 移动端 390×844 ===\n");
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await sleep(700);
   const mob = await J(`(()=>{
