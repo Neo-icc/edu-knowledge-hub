@@ -88,7 +88,8 @@ const PROBE = `(() => {
   await send("Page.enable");
   await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
-  for (const [name, url] of [["家长教师 practice", "http://127.0.0.1:8899/practice/"], ["教育学者 research", "http://127.0.0.1:8899/research/"]]) {
+  const B = process.argv[2] || "http://127.0.0.1:8899";
+  for (const [name, url] of [["家长教师 practice", B + "/practice/"], ["教育学者 research", B + "/research/"]]) {
     await send("Runtime.evaluate", { expression: "try{localStorage.clear()}catch(e){}" });
     await send("Page.navigate", { url });
     await sleep(3200);

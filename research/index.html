@@ -16,6 +16,8 @@
 @media (min-width:861px){
   #menubtn{display:none!important}
   aside{position:relative}
+  /* 品牌标题右侧给折叠按钮让位（按钮宽54+right14，留88px） */
+  .brand{padding:20px 88px 14px 20px}
   .nav-fold-btn{position:absolute;top:14px;right:14px;z-index:5;
     display:inline-flex;align-items:center;gap:4px;padding:4px 8px;
     border:1px solid var(--line);border-radius:6px;background:transparent;
@@ -31,6 +33,7 @@
 }
 @media (max-width:860px){
   .nav-fold-btn,.fold-float{display:none!important}
+  .brand{padding:20px 20px 14px}
 }
 </style>
 </head>

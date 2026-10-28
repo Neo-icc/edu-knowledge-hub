@@ -270,8 +270,18 @@ const ok = (name, detail, cond) => {
       const main=f.querySelector("main,.main"); const mr=main?main.getBoundingClientRect():null;
       const btn=[...f.querySelectorAll("button")].find(b=>/收起/.test(b.textContent||""));
       const br=btn?btn.getBoundingClientRect():null;
+      let overlap=0;
+      const brand=f.querySelector(".brand");
+      const h1=brand&&brand.querySelector("h1,.brand-title");
+      if(h1&&br){
+        const hr=h1.getBoundingClientRect();
+        const ox=Math.max(0,Math.min(br.right,hr.right)-Math.max(br.left,hr.left));
+        const oy=Math.max(0,Math.min(br.bottom,hr.bottom)-Math.max(br.top,hr.top));
+        overlap=Math.round(ox*oy*10)/10;
+      }
       return JSON.stringify({side, mainW:mr?R(mr.width):null,
-        btnW:br?R(br.width):0, btnH:br?R(br.height):0, btnLeft:br?R(br.left):null, btnTop:br?R(br.top):null});
+        btnW:br?R(br.width):0, btnH:br?R(br.height):0, btnLeft:br?R(br.left):null, btnTop:br?R(br.top):null,
+        brandOverlap:overlap});
     })()`);
     await run(`(()=>{const f=document.getElementById("frame").contentDocument;
       const b=[...f.querySelectorAll("button")].find(x=>/收起/.test(x.textContent||""));
@@ -301,6 +311,8 @@ const ok = (name, detail, cond) => {
   ok("研究端侧栏宽度", `${navR.open.side ? navR.open.side.w : "无"}px`, navR.open.side && Math.abs(navR.open.side.w - 264) < 0.6);
   const sideGap = (navP.open.side && navR.open.side) ? Math.abs(navP.open.side.w - navR.open.side.w) : 999;
   ok("两侧栏宽度一致", `差 ${Math.round(sideGap * 10) / 10}px`, sideGap < 0.6);
+  ok("品牌标题与折叠按钮不重叠", `研究端重叠 ${navR.open.brandOverlap}px² · 家长端 ${navP.open.brandOverlap}px²`,
+     navR.open.brandOverlap === 0 && navP.open.brandOverlap === 0);
 
   const btnGapW = Math.abs(navP.open.btnW - navR.open.btnW);
   const btnGapH = Math.abs(navP.open.btnH - navR.open.btnH);
