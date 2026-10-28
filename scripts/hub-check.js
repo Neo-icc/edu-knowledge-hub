@@ -251,7 +251,78 @@ const ok = (name, detail, cond) => {
   await sleep(300);
   ok("弹层可关闭", await run(`document.getElementById("sharepop").hidden`) === true ? "是" : "否", true);
 
-  console.log("\n=== 7. 移动端 390×844 ===\n");
+  console.log("\n=== 7. 两个入口侧栏一致性（宽度 / 折叠方式 / 状态键） ===\n");
+  await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(600);
+
+  const navProbe = async (ident) => {
+    await run(`localStorage.removeItem("edu-nav-fold"); location.hash = "#/";`);
+    await sleep(500);
+    await run(`document.querySelector('[data-ident="${ident}"]').click();`);
+    await sleep(2800);
+    const open = await J(`(()=>{
+      const f=document.getElementById("frame").contentDocument, w=f.defaultView, R=n=>Math.round(n*10)/10;
+      let side=null;
+      for(const el of f.querySelectorAll("aside,.sidebar")){
+        const r=el.getBoundingClientRect(), s=w.getComputedStyle(el);
+        if(r.width>140 && s.display!=="none"){ side={w:R(r.width),left:R(r.left)}; break; }
+      }
+      const main=f.querySelector("main,.main"); const mr=main?main.getBoundingClientRect():null;
+      const btn=[...f.querySelectorAll("button")].find(b=>/收起/.test(b.textContent||""));
+      const br=btn?btn.getBoundingClientRect():null;
+      return JSON.stringify({side, mainW:mr?R(mr.width):null,
+        btnW:br?R(br.width):0, btnH:br?R(br.height):0, btnLeft:br?R(br.left):null, btnTop:br?R(br.top):null});
+    })()`);
+    await run(`(()=>{const f=document.getElementById("frame").contentDocument;
+      const b=[...f.querySelectorAll("button")].find(x=>/收起/.test(x.textContent||""));
+      if(b) b.click();})()`);
+    await sleep(1100);
+    const shut = await J(`(()=>{
+      const f=document.getElementById("frame").contentDocument, w=f.defaultView, R=n=>Math.round(n*10)/10;
+      const main=f.querySelector("main,.main"); const mr=main?main.getBoundingClientRect():null;
+      const fl=f.querySelector(".fold-float"); const fr=fl?fl.getBoundingClientRect():null;
+      let sidebarVisible=false;
+      for(const el of f.querySelectorAll("aside,.sidebar")){
+        const r=el.getBoundingClientRect(), s=w.getComputedStyle(el);
+        if(r.width>140 && s.display!=="none"){ sidebarVisible=true; break; }
+      }
+      return JSON.stringify({mainW:mr?R(mr.width):null, sidebarVisible,
+        floatW:fr?R(fr.width):0, floatH:fr?R(fr.height):0,
+        floatLeft:fr?R(fr.left):null, floatTop:fr?R(fr.top):null,
+        bodyClass:f.body.className, key:w.localStorage.getItem("edu-nav-fold")});
+    })()`);
+    return { open, shut };
+  };
+
+  const navP = await navProbe("educator");
+  const navR = await navProbe("researcher");
+
+  ok("家长端侧栏宽度", `${navP.open.side ? navP.open.side.w : "无"}px`, navP.open.side && Math.abs(navP.open.side.w - 264) < 0.6);
+  ok("研究端侧栏宽度", `${navR.open.side ? navR.open.side.w : "无"}px`, navR.open.side && Math.abs(navR.open.side.w - 264) < 0.6);
+  const sideGap = (navP.open.side && navR.open.side) ? Math.abs(navP.open.side.w - navR.open.side.w) : 999;
+  ok("两侧栏宽度一致", `差 ${Math.round(sideGap * 10) / 10}px`, sideGap < 0.6);
+
+  const btnGapW = Math.abs(navP.open.btnW - navR.open.btnW);
+  const btnGapH = Math.abs(navP.open.btnH - navR.open.btnH);
+  ok("折叠按钮尺寸一致", `${navP.open.btnW}×${navP.open.btnH} vs ${navR.open.btnW}×${navR.open.btnH}`,
+     btnGapW < 0.6 && btnGapH < 0.6);
+  const btnGapL = Math.abs((navP.open.btnLeft || 0) - (navR.open.btnLeft || 0));
+  const btnGapT = Math.abs((navP.open.btnTop || 0) - (navR.open.btnTop || 0));
+  ok("折叠按钮位置一致", `L ${navP.open.btnLeft} vs ${navR.open.btnLeft}`, btnGapL < 0.6 && btnGapT < 0.6);
+
+  ok("折叠后正文占满", `${navP.shut.mainW} / ${navR.shut.mainW}`, navP.shut.mainW === 1440 && navR.shut.mainW === 1440);
+  ok("折叠后侧栏隐藏", `家长=${!navP.shut.sidebarVisible} 研究=${!navR.shut.sidebarVisible}`,
+     navP.shut.sidebarVisible === false && navR.shut.sidebarVisible === false);
+  const flGap = Math.abs(navP.shut.floatW - navR.shut.floatW) + Math.abs(navP.shut.floatH - navR.shut.floatH);
+  ok("悬浮展开按钮一致", `${navP.shut.floatW}×${navP.shut.floatH} vs ${navR.shut.floatW}×${navR.shut.floatH}`, flGap < 0.6);
+  ok("折叠状态类一致", `家长=${navP.shut.bodyClass} 研究=${navR.shut.bodyClass}`,
+     /(^|\s)nav-fold(\s|$)/.test(navP.shut.bodyClass) && /(^|\s)nav-fold(\s|$)/.test(navR.shut.bodyClass));
+  ok("折叠状态键一致", `家长=${navP.shut.key} 研究=${navR.shut.key}`,
+     navP.shut.key === "1" && navR.shut.key === "1");
+  await run(`localStorage.removeItem("edu-nav-fold"); location.hash = "#/";`);
+  await sleep(400);
+
+  console.log("\n=== 8. 移动端 390×844 ===\n");
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await sleep(700);
   const mob = await J(`(()=>{

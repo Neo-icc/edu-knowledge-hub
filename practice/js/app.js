@@ -2049,7 +2049,7 @@
     const toggleFold = () => {
       state.navFold = !state.navFold;
       document.body.classList.toggle("nav-fold", state.navFold);
-      try { localStorage.setItem("atlas-nav-fold", state.navFold ? "1" : "0"); } catch (e) {}
+      try { localStorage.setItem("edu-nav-fold", state.navFold ? "1" : "0"); } catch (e) {}
       render();
     };
     const foldBtn = document.getElementById("nav-fold-btn");
@@ -2260,7 +2260,7 @@
   /* 恢复桌面侧栏折叠状态 */
   (function () {
     let f = "0";
-    try { f = localStorage.getItem("atlas-nav-fold") || "0"; } catch (e) {}
+    try { f = localStorage.getItem("edu-nav-fold") || "0"; } catch (e) {}
     state.navFold = f === "1";
     if (state.navFold) document.body.classList.add("nav-fold");
   })();
