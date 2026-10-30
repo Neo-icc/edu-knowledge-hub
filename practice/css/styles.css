@@ -164,7 +164,8 @@ img, svg { display: block; max-width: 100%; }
 /* 折叠按钮绝对定位到头部右上角，与品牌标题并排不挤占正文 */
 .nav-fold-btn { position: absolute; top: 14px; right: 14px; }
 
-.brand { display: block; }
+.brand { display: flex; align-items: center; gap: 0.55rem; }
+.brand-home { flex-shrink: 0; color: var(--accent); }
 .brand-title {
   font-family: var(--serif);
   font-weight: 700;
@@ -296,6 +297,17 @@ img, svg { display: block; max-width: 100%; }
   transition: all var(--t-fast) var(--ease);
 }
 .theme-btn:hover { border-color: var(--rule-2); color: var(--ink); }
+/* 顶栏圆形主题钮：覆盖 .icon-btn 的圆角矩形，保持正圆 */
+.icon-btn.theme-toggle { border-radius: 50%; font-size: 0.95rem; line-height: 1; }
+#share-toast {
+  position: fixed; left: 50%; bottom: 46px; transform: translateX(-50%) translateY(10px);
+  z-index: 90; background: var(--ink); color: var(--paper);
+  border-radius: 999px; padding: 9px 18px; font-size: 0.8rem;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), visibility var(--t-fast);
+  max-width: 88vw; text-align: center;
+}
+#share-toast.on { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 .sidebar-foot .ver {
   margin-left: auto;
   font-family: var(--mono);
@@ -361,12 +373,13 @@ img, svg { display: block; max-width: 100%; }
 
 .mobile-only { display: none; }
 
-/* 桌面端：practice 顶栏隐藏，导航与搜索由侧栏承担，避免与门户顶栏叠成两行；
-   但折叠态（侧栏收起）恢复顶栏——「展开侧栏」按钮在顶栏流内，正文自然让位，不再悬浮遮挡 */
+/* 桌面端顶栏常驻：房子（侧栏）、入口面包屑、搜索 / 分享 / 主题常在手边；
+   侧栏折叠时「展开侧栏」按钮出现在顶栏流内，正文自然让位，不再悬浮遮挡 */
 @media (min-width: 861px) {
-  .topbar { display: none; }
   body.nav-fold .topbar { display: flex; }
 }
+/* 嵌入门户 iframe 时由 Hub 顶栏承担品牌/分享/主题，本页顶栏隐藏 */
+body.embed .topbar { display: none; }
 
 /* ---------- 排版 ---------- */
 .eyebrow {
@@ -1382,6 +1395,15 @@ h1.page-title {
 .ni-rel b { font-variant-numeric: tabular-nums; color: var(--ink-2); }
 .ni-link { display: inline-block; margin-top: 0.5rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; font-weight: 600; }
 .ni-link:hover { text-decoration: underline; }
+.ni-expand {
+  display: block; width: 100%; margin-top: 0.55rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--accent); color: var(--accent-ink);
+  border: none; border-radius: var(--r1);
+  font-size: 0.76rem; font-weight: 600; cursor: pointer;
+}
+.ni-expand:hover { filter: brightness(1.05); }
+.ni-done { display: block; margin-top: 0.55rem; font-size: 0.7rem; color: var(--ink-5); }
 .graph-bar {
   display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center;
   margin-top: var(--s4);

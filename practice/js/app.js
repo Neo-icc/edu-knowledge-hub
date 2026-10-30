@@ -18,7 +18,6 @@
     filter: { domain: "", branch: "", kind: "" },
     tlDomain: "",
     tlEra: "",
-    netHubs: false,
     lpDomain: "",
     glossaryQ: "",
     netType: { agreement: true, disagreement: true, derivative: true },
@@ -152,9 +151,9 @@
     <aside class="sidebar" id="sidebar" aria-label="主导航">
       <div class="sidebar-head">
         <button class="nav-fold-btn" id="nav-fold-btn" aria-label="收起侧栏" title="收起侧栏">«<span>收起</span></button>
-        <a class="brand" href="#/">
-          <span class="brand-title">教育与心智<br/>知识图谱</span>
-          <span class="brand-en">Education · Mind · Brain Atlas</span>
+        <a class="brand" id="home-btn" href="#/" title="返回主页" aria-label="返回主页">
+          <svg class="brand-home" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          <span class="brand-title">知识图谱</span>
         </a>
         <div class="aud-hint">家长或老师 · 教育者视角　按年龄与情境组织，含课堂活动与转介边界</div>
       </div>
@@ -179,10 +178,6 @@
         </div>
       </nav>
       <div class="sidebar-foot">
-        <button class="theme-btn" id="theme-toggle" aria-label="切换主题">
-          <span id="theme-icon">${state.theme === "dark" ? "☾" : "☀"}</span>
-          <span id="theme-label">${state.theme === "dark" ? "深色" : "浅色"}</span>
-        </button>
         <span class="ver">v${esc(A.meta.version)}</span>
       </div>
     </aside>`;
@@ -201,6 +196,8 @@
             <div class="crumb">${crumb || '<span class="cur">概览</span>'}</div>
             <div class="topbar-actions">
               <button class="icon-btn" id="open-search-2" aria-label="搜索" title="搜索 (Ctrl K)">⌕</button>
+              <button class="icon-btn" id="share-btn" aria-label="分享" title="分享此页"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></button>
+              <button class="icon-btn theme-toggle" id="theme-toggle" aria-label="切换主题" title="切换主题"><span id="theme-icon">${state.theme === "dark" ? "☾" : "☀"}</span></button>
             </div>
           </div>
         </div>
@@ -1253,7 +1250,7 @@
     <div class="page-head">
       <span class="eyebrow">Network · 关联网络</span>
       <h1 class="page-title">跨领域关联图谱</h1>
-      <p class="page-lead">节点为知识点，颜色编码领域；连线为共识、分歧与衍生。拖拽节点重排，滚轮或按钮缩放，点击节点进入条目。</p>
+      <p class="page-lead">节点为知识点，颜色编码领域；连线为共识、分歧与衍生。初始只显示核心枢纽，点击节点逐层展开其关联；拖拽重排，滚轮缩放。</p>
       <div class="graph-legend">
         <span class="gl-item"><span class="gl-line" style="background:var(--agree)"></span>共识</span>
         <span class="gl-item"><span class="gl-line" style="background:var(--disagree)"></span>分歧</span>
@@ -1265,22 +1262,21 @@
       <button class="chip on" data-net-type="agreement">共识 <span class="n">${S.stats.byType.agreement}</span></button>
       <button class="chip on" data-net-type="disagreement">分歧 <span class="n">${S.stats.byType.disagreement}</span></button>
       <button class="chip on" data-net-type="derivative">衍生 <span class="n">${S.stats.byType.derivative}</span></button>
-      <button class="chip ${state.netHubs ? "on" : ""}" id="net-hubs">仅枢纽（≥4 关联）</button>
       <button class="chip" id="net-zoom-in" title="放大">＋</button>
       <button class="chip" id="net-zoom-out" title="缩小">－</button>
-      <button class="chip" id="net-reset">重置视图</button>
+      <button class="chip" id="net-reset">收起全部</button>
       <span class="filter-meta" id="net-count"></span>
     </div>
     <div class="graph-wrap">
       <canvas id="graph" role="img" aria-label="知识点关联网络图"></canvas>
       <div class="graph-nodeinfo" id="graph-nodeinfo"></div>
     </div>
-    <p class="graph-hint">提示：拖拽节点重排，滚轮或按钮缩放，点击节点查看详情；节点标签会自动避让重叠。</p>
+    <p class="graph-hint">提示：初始只显示核心节点，点击节点可逐步展开其关联节点；滚轮或按钮缩放，拖拽重排。</p>
     ${footHTML()}`;
   }
 
   /* ---------------- 关联网络（Canvas 自绘，参考研究者端实现） ---------------- */
-  const netState = { nodes: [], edges: [], drag: null, offX: 0, offY: 0, scale: 1, hover: null, simTicks: 0, bound: false };
+  const netState = { allNodes: [], allEdges: [], nodes: [], edges: [], adjMap: {}, expanded: new Set(), visibleIds: new Set(), drag: null, offX: 0, offY: 0, scale: 1, hover: null, simTicks: 0, bound: false };
 
   function netDims() {
     const cv = document.getElementById("graph");
@@ -1288,33 +1284,93 @@
   }
 
   function buildNet() {
-    const nodePool = state.netHubs ? S.entries.filter((e) => S.degree(e.id) >= 4) : S.entries;
-    const nodeIds = new Set(nodePool.map((e) => e.id));
     const domIndex = {};
     S.domains.forEach((d, i) => { domIndex[d.id] = i; });
+    const nodeIds = new Set(S.entries.map((e) => e.id));
     const map = new Map();
-    nodePool.forEach((e) => {
+    S.entries.forEach((e) => {
       const deg = S.degree(e.id);
-      map.set(e.id, { id: e.id, name: e.name, domain: e.domain, deg, r: 4.5 + Math.min(9, deg * 0.5), hub: deg >= 4, x: 0, y: 0, vx: 0, vy: 0 });
+      map.set(e.id, { id: e.id, name: e.name, domain: e.domain, deg, r: 4.5 + Math.min(9, deg * 0.5), hub: deg >= 6, x: 0, y: 0, vx: 0, vy: 0 });
     });
-    netState.edges = [];
+    netState.allNodes = [...map.values()];
+    netState.allEdges = [];
     S.links.forEach((l) => {
       if (!nodeIds.has(l.a) || !nodeIds.has(l.b)) return;
       const a = map.get(l.a), b = map.get(l.b);
       if (!a || !b || a === b) return;
-      netState.edges.push({ a, b, type: l.type, point: l.point });
+      netState.allEdges.push({ a, b, type: l.type, point: l.point });
     });
-    netState.nodes = [...map.values()];
+    netState.adjMap = {};
+    netState.allNodes.forEach((n) => { netState.adjMap[n.id] = []; });
+    netState.allEdges.forEach((e) => {
+      netState.adjMap[e.a.id].push(e.b);
+      netState.adjMap[e.b.id].push(e.a);
+    });
     const { W, H } = netDims();
     const R = Math.min(W, H) * 0.30;
-    netState.nodes.forEach((n) => {
+    netState.allNodes.forEach((n) => {
+      if (!n.hub) return;
       const i = domIndex[n.domain] || 0;
       const ang = (-Math.PI / 2) + (i * 2 * Math.PI) / Math.max(1, S.domains.length);
-      n.x = W / 2 + Math.cos(ang) * R + (Math.random() - 0.5) * 70;
-      n.y = H / 2 + Math.sin(ang) * R + (Math.random() - 0.5) * 70;
+      n.x = W / 2 + Math.cos(ang) * R + (Math.random() - 0.5) * 90;
+      n.y = H / 2 + Math.sin(ang) * R + (Math.random() - 0.5) * 90;
+      n.placed = true;
     });
+    netState.domIndex = domIndex;
+    netState.expanded = new Set();
+    netState.nodes = []; netState.edges = [];
+    netState.visibleIds = new Set();
     netState.simTicks = 0;
     netState.scale = 1; netState.offX = 0; netState.offY = 0; netState.hover = null; netState.drag = null;
+    applyVisibility();
+  }
+
+  /* 新出现的节点放在已有邻居旁边，避免全局重排导致视觉跳变 */
+  function placeNewNode(n) {
+    const { W, H } = netDims();
+    const nebs = netState.adjMap[n.id] || [];
+    for (const nb of nebs) {
+      if (nb.placed) {
+        const ang = Math.random() * Math.PI * 2;
+        const dist = 95 + Math.random() * 65;
+        n.x = nb.x + Math.cos(ang) * dist;
+        n.y = nb.y + Math.sin(ang) * dist;
+        n.vx = 0; n.vy = 0; n.placed = true;
+        return;
+      }
+    }
+    n.x = W / 2 + (Math.random() - 0.5) * 160;
+    n.y = H / 2 + (Math.random() - 0.5) * 160;
+    n.vx = 0; n.vy = 0; n.placed = true;
+  }
+
+  /* 渐进式展开：初始只显示枢纽（≥4 关联），已展开节点的邻居（度数≥2）逐步出现 */
+  function applyVisibility() {
+    const visSet = new Set();
+    netState.allNodes.forEach((n) => { if (n.hub) visSet.add(n.id); });
+    netState.expanded.forEach((id) => {
+      visSet.add(id);
+      (netState.adjMap[id] || []).forEach((nb) => { if (nb.deg >= 2) visSet.add(nb.id); });
+    });
+    const wasVisible = new Set((netState.nodes || []).map((n) => n.id));
+    netState.nodes = netState.allNodes.filter((n) => visSet.has(n.id));
+    netState.nodes.forEach((n) => { if (!wasVisible.has(n.id) && !n.placed) placeNewNode(n); });
+    netState.visibleIds = visSet;
+    netState.edges = netState.allEdges.filter((e) => visSet.has(e.a.id) && visSet.has(e.b.id));
+    netState.simTicks = 0;
+  }
+
+  function netExpandedCount(id) {
+    const nebs = netState.adjMap[id] || [];
+    return nebs.filter((nb) => nb.deg >= 2 && !netState.visibleIds.has(nb.id)).length;
+  }
+
+  function expandNode(id) {
+    if (!netState.allNodes.some((n) => n.id === id)) return;
+    netState.expanded.add(id);
+    applyVisibility();
+    netApplyFilter();
+    requestAnimationFrame(netDraw);
   }
 
   function netSimulate() {
@@ -1512,12 +1568,23 @@
     const de = rel.filter((x) => x.link.type === "derivative").length;
     const e = S.byId[n.id];
     const dom = domainOf(n.domain);
+    const hidden = netExpandedCount(n.id);
+    const expandHtml = hidden > 0
+      ? `<button class="ni-expand" id="ni-expand">展开 ${hidden} 个关联节点 ▾</button>`
+      : `<span class="ni-done">关联节点已全部展开</span>`;
     box.innerHTML = `<div class="ni-head"><span class="ni-name" style="color:${dom.color}">${esc(n.name)}</span><button class="ni-close" id="ni-close" title="关闭" aria-label="关闭">✕</button></div>
       <div class="ni-meta">${esc(dom.name)} · ${fmtYear(e && e.year)} · 关联 ${n.deg}</div>
       <div class="ni-rel">共识 <b>${ag}</b> · 分歧 <b>${di}</b> · 衍生 <b>${de}</b></div>
+      ${expandHtml}
       <a class="ni-link" href="#/entry/${n.id}">查看详解 →</a>`;
     box.classList.add("on");
     document.getElementById("ni-close").onclick = () => netHideInfo();
+    const exp = document.getElementById("ni-expand");
+    if (exp) exp.onclick = () => {
+      expandNode(n.id);
+      const latest = netState.allNodes.find((x) => x.id === n.id) || n;
+      netShowInfo(latest);
+    };
   }
 
   function initNetInteraction() {
@@ -1566,7 +1633,9 @@
     cv.addEventListener("click", (e) => {
       const r = cv.getBoundingClientRect();
       const hit = netHit(e.clientX - r.left, e.clientY - r.top, 6);
-      if (hit) netShowInfo(hit); else netHideInfo();
+      if (!hit) { netHideInfo(); return; }
+      if (netExpandedCount(hit.id) > 0) expandNode(hit.id);
+      netShowInfo(netState.allNodes.find((x) => x.id === hit.id) || hit);
     });
 
     const zoomBy = (f) => {
@@ -1580,7 +1649,7 @@
     const zi = document.getElementById("net-zoom-in"), zo = document.getElementById("net-zoom-out"), zr = document.getElementById("net-reset");
     if (zi) zi.onclick = () => zoomBy(1.25);
     if (zo) zo.onclick = () => zoomBy(1 / 1.25);
-    if (zr) zr.onclick = () => { netState.scale = 1; netState.offX = 0; netState.offY = 0; netHideInfo(); netDraw(); };
+    if (zr) zr.onclick = () => { netState.scale = 1; netState.offX = 0; netState.offY = 0; netState.expanded = new Set(); applyVisibility(); netHideInfo(); netApplyFilter(); netDraw(); };
 
     document.querySelectorAll("[data-net-type]").forEach((btn) => {
       btn.onclick = () => {
@@ -2036,6 +2105,30 @@
     const themeToggle = document.getElementById("theme-toggle");
     if (themeToggle) themeToggle.addEventListener("click", toggle);
 
+    /* 返回门户主页（iframe 内通过 postMessage 通知父页） */
+    const homeBtn = document.getElementById("home-btn");
+    if (homeBtn) homeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      try { window.parent.postMessage({ type: "go-home" }, "*"); } catch (err) {}
+    });
+
+    /* 分享当前页 */
+    const shareBtn = document.getElementById("share-btn");
+    if (shareBtn) shareBtn.addEventListener("click", async () => {
+      const url = location.href;
+      const toast = (msg) => {
+        let t = document.getElementById("share-toast");
+        if (!t) { t = document.createElement("div"); t.id = "share-toast"; document.body.appendChild(t); }
+        t.textContent = msg; t.classList.add("on");
+        clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove("on"), 2200);
+      };
+      if (navigator.share) {
+        try { await navigator.share({ title: document.title, url }); return; } catch (err) { if (err && err.name === "AbortError") return; }
+      }
+      try { await navigator.clipboard.writeText(url); toast("链接已复制，可粘贴分享"); }
+      catch (err) { toast(url); }
+    });
+
     /* 移动导航（抽屉） */
     const navBtn = document.getElementById("nav-btn");
     if (navBtn) navBtn.addEventListener("click", () => {
@@ -2153,13 +2246,6 @@
       });
     });
 
-    /* 图谱枢纽模式 */
-    const hubBtn = document.getElementById("net-hubs");
-    if (hubBtn) hubBtn.addEventListener("click", () => {
-      state.netHubs = !state.netHubs;
-      render();
-    });
-
     /* 对比 / 路径表单 */
     const cf = document.getElementById("compare-form");
     if (cf) cf.addEventListener("submit", (e) => {
@@ -2266,6 +2352,9 @@
     state.navFold = f === "1";
     if (state.navFold) document.body.classList.add("nav-fold");
   })();
+
+  /* embed=1：嵌入门户 iframe 时由 Hub 顶栏承担房子/分享/主题，隐藏本页顶栏避免两行 */
+  if (/[?&]embed=1\b/.test(location.search)) document.body.classList.add("embed");
 
   document.addEventListener("DOMContentLoaded", render);
   if (document.readyState !== "loading") render();

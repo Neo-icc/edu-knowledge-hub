@@ -19,6 +19,7 @@ import hashlib
 import io
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -26,9 +27,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 P = os.path.join(ROOT, "practice")
 SRC_HTML = os.path.join(P, "index.src.html")
 OUT_HTML = os.path.join(P, "index.html")
-NODE = r"C:\Users\Stephen\.workbuddy\binaries\node\versions\22.12.0\node.exe"
-MINIFY = r"C:\Users\Stephen\WorkBuddy\2026-10-22-18-31-19\edu-knowledge-site\edu-knowledge-site\scripts\minify.js"
-NODE_PATH = r"C:\Users\Stephen\.workbuddy\binaries\node\workspace\node_modules"
+
+# 可移植：优先环境变量，其次 PATH 中的 node；minify.js 默认取 scripts/minify.js，
+# 找不到时 build 自动回退为未压缩产物（页面依旧可用）
+NODE = os.environ.get("NODE_BIN") or shutil.which("node") or "node"
+MINIFY = os.environ.get("MINIFY_JS") or os.path.join(ROOT, "scripts", "minify.js")
+NODE_PATH = os.environ.get("NODE_PATH", "")
 
 
 def read(p):
