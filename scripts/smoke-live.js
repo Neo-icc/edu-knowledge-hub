@@ -99,12 +99,21 @@ const ok = (name, detail, cond) => {
   }catch(e){return 'ERR '+e.message}})()`);
   ok("research iframe 加载", inner2, /title=/.test(String(inner2)));
 
-  // 4. 数据是否为新版
-  const hasNew = await evaluate(`(async function(){
-    var r=await fetch('practice/bundle-data-4b7e44f8.js',{method:'HEAD'});
-    return r.status;
+  // 4. 数据包：从 practice 页面的实际引用里取指纹，不要写死——
+  //    写死会在下次重建后失效（本脚本自己踩过：硬编码旧指纹导致误报 404）
+  const bundleName = await evaluate(`(async function(){
+    try {
+      var r = await fetch('practice/');
+      var t = await r.text();
+      var m = t.match(/bundle-data-[a-z0-9]+\\.js/);
+      return m ? m[0] : null;
+    } catch (e) { return null; }
   })()`);
-  ok("新数据包可达", "status=" + hasNew, hasNew === 200);
+  const hasNew = bundleName
+    ? await evaluate("(async function(){ var r = await fetch('practice/" + bundleName +
+        "', {method:'HEAD'}); return r.status; })()")
+    : null;
+  ok("数据包引用可达", (bundleName || "未取到") + " status=" + hasNew, hasNew === 200);
 
   ok("控制台无错误", "errors=" + consoleErrors.length + (consoleErrors.length ? " → " + consoleErrors[0].slice(0, 80) : ""), consoleErrors.length === 0);
 
