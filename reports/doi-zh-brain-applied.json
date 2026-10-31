@@ -1,0 +1,918 @@
+{
+ "appliedAt": "2026-10-31T11:03:38.972Z",
+ "count": 114,
+ "items": [
+  {
+   "idx": 0,
+   "id": "E184",
+   "i": 0,
+   "doi": "10.1113/jphysiol.1973.sp010273",
+   "title": "Long‐lasting potentiation of synaptic transmission in the dentate area of the anaesthetized rabbit following stimulation of the perforant path",
+   "year": 1973
+  },
+  {
+   "idx": 2,
+   "id": "E183",
+   "i": 1,
+   "doi": "10.1113/jphysiol.1973.sp010273",
+   "title": "Long‐lasting potentiation of synaptic transmission in the dentate area of the anaesthetized rabbit following stimulation of the perforant path",
+   "year": 1973
+  },
+  {
+   "idx": 4,
+   "id": "E185",
+   "i": 1,
+   "doi": "10.1002/(sici)1096-9861(19971020)387:2<167::aid-cne1>3.0.co;2-z",
+   "title": "Regional differences in synaptogenesis in human cerebral cortex",
+   "year": 1997
+  },
+  {
+   "idx": 6,
+   "id": "E187",
+   "i": 1,
+   "doi": "10.1162/0898929042304796",
+   "title": "Sensitive Periods in the Development of the Brain and Behavior",
+   "year": 2004
+  },
+  {
+   "idx": 12,
+   "id": "E186",
+   "i": 1,
+   "doi": "10.1162/0898929042304796",
+   "title": "Sensitive Periods in the Development of the Brain and Behavior",
+   "year": 2004
+  },
+  {
+   "idx": 13,
+   "id": "E192",
+   "i": 0,
+   "doi": "10.1016/j.neuron.2004.08.031",
+   "title": "Sleep-Dependent Learning and Memory Consolidation",
+   "year": 2004
+  },
+  {
+   "idx": 14,
+   "id": "E191",
+   "i": 1,
+   "doi": "10.1016/s0022-5371(72)80001-x",
+   "title": "Levels of processing: A framework for memory research",
+   "year": 1972
+  },
+  {
+   "idx": 15,
+   "id": "E193",
+   "i": 0,
+   "doi": "10.1016/j.nlm.2004.06.005",
+   "title": "Memory systems of the brain: A brief history and current perspective",
+   "year": 2004
+  },
+  {
+   "idx": 16,
+   "id": "E193",
+   "i": 1,
+   "doi": "10.1136/jnnp.20.1.11",
+   "title": "LOSS OF RECENT MEMORY AFTER BILATERAL HIPPOCAMPAL LESIONS",
+   "year": 1957
+  },
+  {
+   "idx": 17,
+   "id": "E194",
+   "i": 1,
+   "doi": "10.1016/s0166-2236(97)01214-9",
+   "title": "Mechanisms of emotional arousal and lasting declarative memory",
+   "year": 1998
+  },
+  {
+   "idx": 18,
+   "id": "E195",
+   "i": 0,
+   "doi": "10.1146/annurev.psych.55.090902.141555",
+   "title": "The Psychology and Neuroscience of Forgetting",
+   "year": 2004
+  },
+  {
+   "idx": 19,
+   "id": "E188",
+   "i": 0,
+   "doi": "10.1126/science.286.5439.548",
+   "title": "Neurogenesis in the Neocortex of Adult Primates",
+   "year": 1999
+  },
+  {
+   "idx": 21,
+   "id": "E196",
+   "i": 0,
+   "doi": "10.1038/35021052",
+   "title": "Fear memories require protein synthesis in the amygdala for reconsolidation after retrieval",
+   "year": 2000
+  },
+  {
+   "idx": 23,
+   "id": "E198",
+   "i": 0,
+   "doi": "10.1038/nrn2298",
+   "title": "Be smart, exercise your heart: exercise effects on brain and cognition",
+   "year": 2008
+  },
+  {
+   "idx": 24,
+   "id": "E197",
+   "i": 1,
+   "doi": "10.1016/j.smrv.2009.10.004",
+   "title": "The influence of sleep quality, sleep duration and sleepiness on school performance in children and adolescents: A meta-analytic review",
+   "year": 2010
+  },
+  {
+   "idx": 25,
+   "id": "E191",
+   "i": 0,
+   "doi": "10.1126/science.287.5451.248",
+   "title": "Memory--a Century of Consolidation",
+   "year": 2000
+  },
+  {
+   "idx": 26,
+   "id": "E199",
+   "i": 0,
+   "doi": "10.1146/annurev.ne.13.030190.000325",
+   "title": "The Attention System of the Human Brain",
+   "year": 1990
+  },
+  {
+   "idx": 30,
+   "id": "E201",
+   "i": 0,
+   "doi": "10.1038/13158",
+   "title": "Brain development during childhood and adolescence: a longitudinal MRI study",
+   "year": 1999
+  },
+  {
+   "idx": 33,
+   "id": "E202",
+   "i": 0,
+   "doi": "10.1037/a0012955",
+   "title": "Age differences in sensation seeking and impulsivity as indexed by behavior and self-report: Evidence for a dual systems model.",
+   "year": 2008
+  },
+  {
+   "idx": 36,
+   "id": "E197",
+   "i": 0,
+   "doi": "10.1196/annals.1417.002",
+   "title": "<i>Sleep Deprivation and Vigilant Attention</i>",
+   "year": 2008
+  },
+  {
+   "idx": 37,
+   "id": "E204",
+   "i": 0,
+   "doi": "10.1146/annurev-psych-010814-015331",
+   "title": "The Science of Mind Wandering: Empirically Navigating the Stream of Consciousness",
+   "year": 2015
+  },
+  {
+   "idx": 38,
+   "id": "E205",
+   "i": 0,
+   "doi": "10.1037/0033-2909.121.1.65",
+   "title": "Behavioral inhibition, sustained attention, and executive functions: Constructing a unifying theory of ADHD.",
+   "year": 1997
+  },
+  {
+   "idx": 41,
+   "id": "E206",
+   "i": 1,
+   "doi": "10.1037/a0028228",
+   "title": "Is working memory training effective? A meta-analytic review.",
+   "year": 2013
+  },
+  {
+   "idx": 44,
+   "id": "E208",
+   "i": 0,
+   "doi": "10.1542/peds.2011-2663",
+   "title": "The Lifelong Effects of Early Childhood Adversity and Toxic Stress",
+   "year": 2012
+  },
+  {
+   "idx": 47,
+   "id": "E209",
+   "i": 1,
+   "doi": "10.31887/dcns.2016.18.1/wschultz",
+   "title": "Dopamine reward prediction error coding",
+   "year": 2016
+  },
+  {
+   "idx": 49,
+   "id": "E211",
+   "i": 0,
+   "doi": "10.1016/s0006-3223(01)01328-2",
+   "title": "Anxiety and affective style: role of prefrontal cortex and amygdala",
+   "year": 2002
+  },
+  {
+   "idx": 51,
+   "id": "E212",
+   "i": 1,
+   "doi": "10.1016/j.psyneuen.2009.04.002",
+   "title": "Oxytocin enhances the experience of attachment security",
+   "year": 2009
+  },
+  {
+   "idx": 54,
+   "id": "E215",
+   "i": 1,
+   "doi": "10.1038/nrn2113",
+   "title": "The cortical organization of speech processing",
+   "year": 2007
+  },
+  {
+   "idx": 56,
+   "id": "E204",
+   "i": 1,
+   "doi": "10.1126/science.1192439",
+   "title": "A Wandering Mind Is an Unhappy Mind",
+   "year": 2010
+  },
+  {
+   "idx": 58,
+   "id": "E214",
+   "i": 1,
+   "doi": "10.1038/nrn2113",
+   "title": "The cortical organization of speech processing",
+   "year": 2007
+  },
+  {
+   "idx": 63,
+   "id": "E220",
+   "i": 0,
+   "doi": "10.1146/annurev.ne.13.030190.001435",
+   "title": "Biological Foundations of Language: Clues from Sign Language",
+   "year": 1989
+  },
+  {
+   "idx": 64,
+   "id": "E207",
+   "i": 1,
+   "doi": "10.1093/oso/9780198505013.003.0007",
+   "title": "The amygdala and emotion: a view through fear",
+   "year": 2000
+  },
+  {
+   "idx": 65,
+   "id": "E219",
+   "i": 0,
+   "doi": "10.1038/nrn2113",
+   "title": "The cortical organization of speech processing",
+   "year": 2007
+  },
+  {
+   "idx": 66,
+   "id": "E221",
+   "i": 1,
+   "doi": "10.1037/a0012682",
+   "title": "Developmental change in the acuity of the \"number sense\": The approximate number system in 3-, 4-, 5-, and 6-year-olds and adults.",
+   "year": 2008
+  },
+  {
+   "idx": 69,
+   "id": "E223",
+   "i": 0,
+   "doi": "10.1371/journal.pone.0048076",
+   "title": "When Math Hurts: Math Anxiety Predicts Pain Network Activation in Anticipation of Doing Math",
+   "year": 2012
+  },
+  {
+   "idx": 72,
+   "id": "E224",
+   "i": 1,
+   "doi": "10.1016/j.lindif.2009.10.005",
+   "title": "Working memory and mathematics: A review of developmental, individual difference, and cognitive approaches",
+   "year": 2010
+  },
+  {
+   "idx": 82,
+   "id": "E226",
+   "i": 1,
+   "doi": "10.1037/a0016127",
+   "title": "Spatial ability for STEM domains: Aligning over 50 years of cumulative psychological knowledge solidifies its importance.",
+   "year": 2009
+  },
+  {
+   "idx": 85,
+   "id": "E230",
+   "i": 1,
+   "doi": "10.1177/1529100616661983",
+   "title": "Do “Brain-Training” Programs Work?",
+   "year": 2016
+  },
+  {
+   "idx": 87,
+   "id": "E232",
+   "i": 0,
+   "doi": "10.2307/1176301",
+   "title": "Education and the Brain: A Bridge Too Far",
+   "year": 1997
+  },
+  {
+   "idx": 89,
+   "id": "E231",
+   "i": 0,
+   "doi": "10.3389/fpsyg.2012.00429",
+   "title": "Neuromyths in Education: Prevalence and Predictors of Misconceptions among Teachers",
+   "year": 2012
+  },
+  {
+   "idx": 92,
+   "id": "E221",
+   "i": 0,
+   "doi": "10.1016/j.tics.2004.05.002",
+   "title": "Core systems of number",
+   "year": 2004
+  },
+  {
+   "idx": 95,
+   "id": "E398",
+   "i": 0,
+   "doi": "10.1152/jn.1965.28.6.1041",
+   "title": "BINOCULAR INTERACTION IN STRIATE CORTEX OF KITTENS REARED WITH ARTIFICIAL SQUINT",
+   "year": 1965
+  },
+  {
+   "idx": 98,
+   "id": "E400",
+   "i": 0,
+   "doi": "10.1016/0010-0285(89)90003-0",
+   "title": "Critical period effects in second language learning: The influence of maturational state on the acquisition of English as a second language",
+   "year": 1989
+  },
+  {
+   "idx": 99,
+   "id": "E399",
+   "i": 1,
+   "doi": "10.1523/jneurosci.5118-08.2009",
+   "title": "Musical Training Shapes Structural Brain Development",
+   "year": 2009
+  },
+  {
+   "idx": 101,
+   "id": "E401",
+   "i": 0,
+   "doi": "10.1016/j.neuron.2013.12.025",
+   "title": "Sleep and the Price of Plasticity: From Synaptic and Cellular Homeostasis to Memory Consolidation and Integration",
+   "year": 2014
+  },
+  {
+   "idx": 102,
+   "id": "E227",
+   "i": 0,
+   "doi": "10.1038/scientificamerican0867-24",
+   "title": "The Split Brain in Man",
+   "year": 1967
+  },
+  {
+   "idx": 103,
+   "id": "E402",
+   "i": 1,
+   "doi": "10.1016/s0028-3932(01)00128-2",
+   "title": "Differential role for the striatum and cerebellum in response to novel movements using a motor learning paradigm",
+   "year": 2002
+  },
+  {
+   "idx": 104,
+   "id": "E401",
+   "i": 1,
+   "doi": "10.1038/nn2035",
+   "title": "Molecular and electrophysiological evidence for net synaptic potentiation in wake and depression in sleep",
+   "year": 2008
+  },
+  {
+   "idx": 112,
+   "id": "E406",
+   "i": 0,
+   "doi": "10.1146/annurev-psych-120710-100422",
+   "title": "Working Memory: Theories, Models, and Controversies",
+   "year": 2012
+  },
+  {
+   "idx": 113,
+   "id": "E407",
+   "i": 0,
+   "doi": "10.1017/s0140525x07002178",
+   "title": "On the constructive episodic simulation of past and future events",
+   "year": 2007
+  },
+  {
+   "idx": 114,
+   "id": "E407",
+   "i": 1,
+   "doi": "10.1016/s0022-5371(74)80011-3",
+   "title": "Reconstruction of automobile destruction: An example of the interaction between language and memory",
+   "year": 1974
+  },
+  {
+   "idx": 116,
+   "id": "E396",
+   "i": 0,
+   "doi": "10.2307/1130197",
+   "title": "Experience and Brain Development",
+   "year": 1987
+  },
+  {
+   "idx": 117,
+   "id": "E408",
+   "i": 1,
+   "doi": "10.1038/nn1078",
+   "title": "Sleep-dependent learning: a nap is as good as a night",
+   "year": 2003
+  },
+  {
+   "idx": 119,
+   "id": "E410",
+   "i": 0,
+   "doi": "10.1101/lm.58503",
+   "title": "Sleep and the Time Course of Motor Skill Learning",
+   "year": 2003
+  },
+  {
+   "idx": 120,
+   "id": "E410",
+   "i": 1,
+   "doi": "10.1037/bul0000009",
+   "title": "Sleep and motor learning: Is there room for consolidation?",
+   "year": 2015
+  },
+  {
+   "idx": 122,
+   "id": "E411",
+   "i": 1,
+   "doi": "10.1093/sleep/21.8.871",
+   "title": "Adolescent Sleep Patterns, Circadian Timing, and Sleepiness at a Transition to Early School Days",
+   "year": 1998
+  },
+  {
+   "idx": 126,
+   "id": "E414",
+   "i": 1,
+   "doi": "10.3928/0048-5713-19951201-07",
+   "title": "The Formation of False Memories",
+   "year": 1995
+  },
+  {
+   "idx": 128,
+   "id": "E402",
+   "i": 0,
+   "doi": "10.1016/j.conb.2005.03.004",
+   "title": "Reorganization and plasticity in the adult brain during learning of motor skills",
+   "year": 2005
+  },
+  {
+   "idx": 129,
+   "id": "E416",
+   "i": 0,
+   "doi": "10.1037/10037-000",
+   "title": "Perception and communication.",
+   "year": 1958
+  },
+  {
+   "idx": 130,
+   "id": "E415",
+   "i": 0,
+   "doi": "10.1111/1467-9280.02453",
+   "title": "Confidence, Not Consistency, Characterizes Flashbulb Memories",
+   "year": 2003
+  },
+  {
+   "idx": 133,
+   "id": "E417",
+   "i": 1,
+   "doi": "10.1037/0096-3445.133.3.339",
+   "title": "Load Theory of Selective Attention and Cognitive Control.",
+   "year": 2004
+  },
+  {
+   "idx": 138,
+   "id": "E420",
+   "i": 1,
+   "doi": "10.1016/s1364-6613(03)00028-7",
+   "title": "Task switching",
+   "year": 2003
+  },
+  {
+   "idx": 140,
+   "id": "E421",
+   "i": 0,
+   "doi": "10.1097/01.chi.0000087564.34977.21",
+   "title": "Do Executive Deficits and Delay Aversion Make Independent Contributions to Preschool Attention-Deficit/Hyperactivity Disorder Symptoms?",
+   "year": 2003
+  },
+  {
+   "idx": 145,
+   "id": "E423",
+   "i": 1,
+   "doi": "10.1038/s41562-018-0506-1",
+   "title": "The association between adolescent well-being and digital technology use",
+   "year": 2019
+  },
+  {
+   "idx": 147,
+   "id": "E425",
+   "i": 0,
+   "doi": "10.1007/978-1-4419-8126-4_5",
+   "title": "Intrinsic and Extraneous Cognitive Load",
+   "year": 2011
+  },
+  {
+   "idx": 148,
+   "id": "E425",
+   "i": 1,
+   "doi": "10.1207/s15326985ep3801_8",
+   "title": "Cognitive Load Measurement as a Means to Advance Cognitive Load Theory",
+   "year": 2003
+  },
+  {
+   "idx": 149,
+   "id": "E426",
+   "i": 1,
+   "doi": "10.1126/science.164.3875.86",
+   "title": "Pan-Cultural Elements in Facial Displays of Emotion",
+   "year": 1969
+  },
+  {
+   "idx": 152,
+   "id": "E427",
+   "i": 0,
+   "doi": "10.1002/cne.920180503",
+   "title": "The relation of strength of stimulus to rapidity of habit‐formation",
+   "year": 1908
+  },
+  {
+   "idx": 155,
+   "id": "E414",
+   "i": 0,
+   "doi": "10.1016/s0022-5371(74)80011-3",
+   "title": "Reconstruction of automobile destruction: An example of the interaction between language and memory",
+   "year": 1974
+  },
+  {
+   "idx": 157,
+   "id": "E430",
+   "i": 0,
+   "doi": "10.1523/jneurosci.2431-05.2005",
+   "title": "The Role of Ventral Frontostriatal Circuitry in Reward-Based Learning in Humans",
+   "year": 2006
+  },
+  {
+   "idx": 158,
+   "id": "E429",
+   "i": 1,
+   "doi": "10.1097/psy.0b013e3182464dd1",
+   "title": "The Neural Bases of Social Pain",
+   "year": 2012
+  },
+  {
+   "idx": 159,
+   "id": "E417",
+   "i": 0,
+   "doi": "10.1037/0096-1523.21.3.451",
+   "title": "Perceptual load as a necessary condition for selective attention.",
+   "year": 1995
+  },
+  {
+   "idx": 160,
+   "id": "E431",
+   "i": 1,
+   "doi": "10.1038/nature03701",
+   "title": "Oxytocin increases trust in humans",
+   "year": 2005
+  },
+  {
+   "idx": 161,
+   "id": "E431",
+   "i": 0,
+   "doi": "10.1016/j.yhbeh.2012.01.008",
+   "title": "Oxytocin and social affiliation in humans",
+   "year": 2012
+  },
+  {
+   "idx": 163,
+   "id": "E418",
+   "i": 1,
+   "doi": "10.1111/j.1467-8624.2007.01019.x",
+   "title": "Relating Effortful Control, Executive Function, and False Belief Understanding to Emerging Math and Literacy Ability in Kindergarten",
+   "year": 2007
+  },
+  {
+   "idx": 164,
+   "id": "E432",
+   "i": 1,
+   "doi": "10.1016/j.cub.2014.06.054",
+   "title": "Empathy and compassion",
+   "year": 2014
+  },
+  {
+   "idx": 169,
+   "id": "E421",
+   "i": 1,
+   "doi": "10.1016/j.biopsych.2004.08.025",
+   "title": "Causal Heterogeneity in Attention-Deficit/Hyperactivity Disorder: Do We Need Neuropsychologically Impaired Subtypes?",
+   "year": 2005
+  },
+  {
+   "idx": 170,
+   "id": "E435",
+   "i": 1,
+   "doi": "10.1146/annurev-med-052209-100430",
+   "title": "Stress- and Allostasis-Induced Brain Plasticity",
+   "year": 2011
+  },
+  {
+   "idx": 171,
+   "id": "E437",
+   "i": 1,
+   "doi": "10.1098/rstb.2009.0111",
+   "title": "A complementary systems account of word learning: neural and behavioural evidence",
+   "year": 2009
+  },
+  {
+   "idx": 173,
+   "id": "E440",
+   "i": 1,
+   "doi": "10.1111/desc.12471",
+   "title": "Longitudinal stability of pre‐reading skill profiles of kindergarten children: implications for early screening and theories of reading",
+   "year": 2016
+  },
+  {
+   "idx": 174,
+   "id": "E437",
+   "i": 0,
+   "doi": "10.1038/nrn2113",
+   "title": "The cortical organization of speech processing",
+   "year": 2007
+  },
+  {
+   "idx": 175,
+   "id": "E442",
+   "i": 0,
+   "doi": "10.1146/annurev.ne.13.030190.001435",
+   "title": "Biological Foundations of Language: Clues from Sign Language",
+   "year": 1990
+  },
+  {
+   "idx": 176,
+   "id": "E438",
+   "i": 1,
+   "doi": "10.1016/j.conb.2006.03.007",
+   "title": "Neuroimaging of syntax and syntactic processing",
+   "year": 2006
+  },
+  {
+   "idx": 179,
+   "id": "E440",
+   "i": 0,
+   "doi": "10.1126/science.1171999",
+   "title": "Dyslexia: A New Synergy Between Education and Cognitive Neuroscience",
+   "year": 2009
+  },
+  {
+   "idx": 181,
+   "id": "E424",
+   "i": 1,
+   "doi": "10.1126/science.1192439",
+   "title": "A Wandering Mind Is an Unhappy Mind",
+   "year": 2010
+  },
+  {
+   "idx": 185,
+   "id": "E446",
+   "i": 1,
+   "doi": "10.1177/0956797613482944",
+   "title": "Training the Approximate Number System Improves Math Proficiency",
+   "year": 2013
+  },
+  {
+   "idx": 186,
+   "id": "E427",
+   "i": 1,
+   "doi": "10.1177/0959354394044004",
+   "title": "Yerkes-Dodson: A Law for all Seasons",
+   "year": 1994
+  },
+  {
+   "idx": 187,
+   "id": "E444",
+   "i": 1,
+   "doi": "10.1016/0010-0285(89)90003-0",
+   "title": "Critical period effects in second language learning: The influence of maturational state on the acquisition of English as a second language",
+   "year": 1989
+  },
+  {
+   "idx": 188,
+   "id": "E448",
+   "i": 0,
+   "doi": "10.1371/journal.pone.0048076",
+   "title": "When Math Hurts: Math Anxiety Predicts Pain Network Activation in Anticipation of Doing Math",
+   "year": 2012
+  },
+  {
+   "idx": 190,
+   "id": "E429",
+   "i": 0,
+   "doi": "10.1126/science.1089134",
+   "title": "Does Rejection Hurt? An fMRI Study of Social Exclusion",
+   "year": 2003
+  },
+  {
+   "idx": 193,
+   "id": "E449",
+   "i": 1,
+   "doi": "10.1016/j.tine.2013.06.004",
+   "title": "Developmental dyscalculia: Fresh perspectives",
+   "year": 2013
+  },
+  {
+   "idx": 194,
+   "id": "E432",
+   "i": 0,
+   "doi": "10.1126/science.1093535",
+   "title": "Empathy for Pain Involves the Affective but not Sensory Components of Pain",
+   "year": 2004
+  },
+  {
+   "idx": 195,
+   "id": "E449",
+   "i": 0,
+   "doi": "10.4324/9781315538112",
+   "title": "Dyscalculia: from Science to Education",
+   "year": 2019
+  },
+  {
+   "idx": 196,
+   "id": "E433",
+   "i": 1,
+   "doi": "10.1146/annurev.neuro.22.1.105",
+   "title": "STRESS AND HIPPOCAMPAL PLASTICITY",
+   "year": 1998
+  },
+  {
+   "idx": 197,
+   "id": "E450",
+   "i": 1,
+   "doi": "10.1080/15248372.2012.725186",
+   "title": "Spatial Training Improves Children's Mathematics Ability",
+   "year": 2014
+  },
+  {
+   "idx": 199,
+   "id": "E452",
+   "i": 0,
+   "doi": "10.1016/j.tics.2004.05.002",
+   "title": "Core systems of number",
+   "year": 2004
+  },
+  {
+   "idx": 204,
+   "id": "E436",
+   "i": 1,
+   "doi": "10.1111/j.1467-7687.2006.00468.x",
+   "title": "Infants show a facilitation effect for native language phonetic perception between 6 and 12 months",
+   "year": 2006
+  },
+  {
+   "idx": 205,
+   "id": "E455",
+   "i": 1,
+   "doi": "10.1038/scientificamerican0867-24",
+   "title": "The Split Brain in Man",
+   "year": 1967
+  },
+  {
+   "idx": 207,
+   "id": "E439",
+   "i": 1,
+   "doi": "10.1016/j.tics.2011.04.001",
+   "title": "The Interactive Account of ventral occipitotemporal contributions to reading",
+   "year": 2011
+  },
+  {
+   "idx": 209,
+   "id": "E455",
+   "i": 0,
+   "doi": "10.1038/nrn3817",
+   "title": "Neuroscience and education: myths and messages",
+   "year": 2014
+  },
+  {
+   "idx": 211,
+   "id": "E458",
+   "i": 1,
+   "doi": "10.2307/1176301",
+   "title": "Education and the Brain: A Bridge Too Far",
+   "year": 1997
+  },
+  {
+   "idx": 213,
+   "id": "E442",
+   "i": 1,
+   "doi": "10.1038/scientificamerican0601-58",
+   "title": "Sign Language in the Brain",
+   "year": 2001
+  },
+  {
+   "idx": 215,
+   "id": "E444",
+   "i": 0,
+   "doi": "10.7551/mitpress/4108.003.0038",
+   "title": "Critical Thinking about Critical Periods: Perspectives on a Critical Period for Language Acquisition",
+   "year": 2002
+  },
+  {
+   "idx": 217,
+   "id": "E445",
+   "i": 1,
+   "doi": "10.1016/j.neuron.2004.10.014",
+   "title": "Tuning Curves for Approximate Numerosity in the Human Intraparietal Sulcus",
+   "year": 2004
+  },
+  {
+   "idx": 218,
+   "id": "E458",
+   "i": 0,
+   "doi": "10.1037/rev0000025",
+   "title": "The practical and principled problems with educational neuroscience.",
+   "year": 2016
+  },
+  {
+   "idx": 219,
+   "id": "E447",
+   "i": 0,
+   "doi": "10.1177/0022219410392046",
+   "title": "Fact Retrieval Deficits in Low Achieving Children and Children With Mathematical Learning Disability",
+   "year": 2011
+  },
+  {
+   "idx": 220,
+   "id": "E448",
+   "i": 1,
+   "doi": "10.1111/j.0956-7976.2005.00789.x",
+   "title": "When High-Powered People Fail",
+   "year": 2005
+  },
+  {
+   "idx": 221,
+   "id": "E460",
+   "i": 0,
+   "doi": "10.1038/nn934",
+   "title": "Avoiding the pediatrician's error: how neuroscientists can help educators (and themselves)",
+   "year": 2002
+  },
+  {
+   "idx": 223,
+   "id": "E450",
+   "i": 0,
+   "doi": "10.1037/a0028446",
+   "title": "The malleability of spatial skills: A meta-analysis of training studies.",
+   "year": 2013
+  },
+  {
+   "idx": 224,
+   "id": "E451",
+   "i": 1,
+   "doi": "10.1016/j.dcn.2011.11.003",
+   "title": "Early math achievement and functional connectivity in the fronto-parietal network",
+   "year": 2012
+  },
+  {
+   "idx": 225,
+   "id": "E453",
+   "i": 0,
+   "doi": "10.1007/978-3-642-21869-9_3",
+   "title": "Cognitive Load Theory and E-Learning",
+   "year": 2011
+  },
+  {
+   "idx": 226,
+   "id": "E454",
+   "i": 1,
+   "doi": "10.1111/j.1539-6053.2009.01038.x",
+   "title": "Learning Styles",
+   "year": 2008
+  },
+  {
+   "idx": 230,
+   "id": "E461",
+   "i": 0,
+   "doi": "10.1111/jcpp.12703",
+   "title": "Editorial Perspective: Neurodiversity – a revolutionary concept for autism and psychiatry",
+   "year": 2017
+  },
+  {
+   "idx": 231,
+   "id": "E462",
+   "i": 1,
+   "doi": "10.2307/1176301",
+   "title": "Education and the Brain: A Bridge Too Far",
+   "year": 1997
+  }
+ ]
+}
