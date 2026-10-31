@@ -1,0 +1,14 @@
+# 依赖与构建临时文件
+node_modules/
+practice/_tmp_*.js
+
+# 体检 / DOI 核验的机器输出（可重新生成；人工判定与题名清单要保留，见下）
+reports/*.json
+!reports/doi-zh-brain-decisions.json
+!reports/doi-zh-brain-titles.json
+!reports/doi-zh-brain-titles-2.json
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini

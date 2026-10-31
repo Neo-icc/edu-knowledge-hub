@@ -123,11 +123,11 @@ edu-knowledge-hub/                     ← Hub 门户（仓库根目录）
 │   └── js/
 │       ├── app.js                      ← 应用逻辑（路由 / 视图 / 交互）
 │       ├── core.js                     ← 核心引擎（数据规范化 / 索引 / 检索 / 图算法 / 自检）
-│       ├── vendor/（d3.v7.min.js, fonts/*.woff2）
+│       ├── vendor/fonts/*.woff2          ← 自托管字体（d3 已移除，网络图为 canvas 自绘）
 │       └── data/（领域、花名册、详解、关联、场景、分诊、活动、DOI…）
 └── research/                           ← 研究者子应用（edu-psych-child-knowledge）
     ├── index.html
-    └── data-entries.js                 ← 条目数据（懒加载）
+    └── data-entries-<hash>.js         ← 条目数据（懒加载，构建带指纹）
 ```
 
 ### 3.2 Hub 门户（index.html）
@@ -147,7 +147,7 @@ edu-knowledge-hub/                     ← Hub 门户（仓库根目录）
 ### 3.4 research 子应用（研究者）
 
 - 独立单页应用，默认深色主题（`data-theme="dark"`）。
-- 条目正文 / 权威来源 / 配图通过 `data-entries.js` **懒加载**，首屏只内联轻量核心（`ENTRIES = []` 起步）。
+- 条目正文 / 权威来源 / 配图通过 `data-entries-<hash>.js` **懒加载**，首屏只内联轻量核心（`ENTRIES = []` 起步）。
 - 视角分 A/B/C/D/E 五个板块（E 为关联视图，无独立条目）。
 
 ### 3.5 为什么这样设计（关键决策逻辑）
@@ -557,32 +557,71 @@ edu-knowledge-hub/                     ← Hub 门户（仓库根目录）
 
 ## 12. 附录：文件清单
 
-### Hub 门户
+### 仓库根目录
 
-- `index.html`：门户顶栏、身份切换、iframe 加载、主题同步
+- `index.html`：门户（落地页、顶栏身份切换、iframe 承载、分享弹层与二维码）
+- `CNAME` / `_headers` / `_redirects` / `.nojekyll`：自定义域、缓存策略、裸域 301、Pages 直服
+- `.gitignore`：忽略依赖、构建临时文件与可重跑的机器输出
+- `README.md`：对外说明（入口、构建、脚本、部署约束）
+- `PROJECT.md`：本文件，架构与演进史
 
 ### practice 子应用（家长·老师）
 
-- `index.html`：HTML 骨架、脚本加载顺序、缓存版本号
-- `css/styles.css`：设计系统（OKLCH 令牌、布局、组件、响应式、打印样式）
-- `css/fonts.css`：本地化字体
+**源文件（构建输入）**
+
+- `index.src.html`：脚本加载顺序（构建从这里读）
+- `css/styles.css`：设计系统（OKLCH 令牌、布局、组件、响应式、打印）
+- `css/fonts.css`：本地化字体声明
 - `js/core.js`：核心引擎（数据规范化、索引、检索、图算法、完整性自检）
 - `js/app.js`：应用逻辑（状态、路由、视图、交互、图片导出）
-- `js/data/domains.js`：5 领域 33 分支、关联类型、证据强度
-- `js/data/roster-1/2/3.js`：条目花名册
+- `js/qr.js`：零依赖二维码编码器
+- `js/data/domains.js`：5 领域 33 分支、关联类型、证据强度、条目类型
+- `js/data/roster-1~3.js`：条目花名册
 - `js/data/entries-d1~d5.js`：条目详解
 - `js/data/dom-6~10.js`：分领域扩建条目 + 关联
-- `js/data/connections-1~6.js`：关联
-- `js/data/scenarios.js`：场景库（47 条）
+- `js/data/connections-1~6.js`：机制关联
+- `js/data/scenarios.js`：场景库（64 条）
 - `js/data/triage.js`：分诊映射（5 年龄档 + 11 困扰类别）
 - `js/data/activities.js`：课堂活动（18 条）
-- `js/data/dois.js`、`thinkers.js`、`scholars-extra.js`、`overrides.js`：DOI / 人物 / 覆盖
+- `js/data/dois.js`：Crossref 核验后的 DOI 映射（739 条）
+- `js/data/thinkers.js` / `scholars-extra.js` / `overrides.js`：人物、补充学者、名称覆盖
+- `js/vendor/fonts/*.woff2`：自托管字体（latin 子集）
+
+**构建产物（勿手改）**
+
+- `index.html`：引用带内容指纹的三个 bundle
+- `bundle-data-<hash>.js` / `bundle-app-<hash>.js` / `bundle-<hash>.css`
 
 ### research 子应用（研究者）
 
-- `index.html`：研究者入口单页应用（深色主题、懒加载）
-- `data-entries.js`：条目数据（正文/来源/配图懒加载）
+- `index.html`：单页应用（深色主题、懒加载）
+- `data-entries-<hash>.js`：454 条条目（正文 / 来源 / 配图懒加载）
+- `data-thinkers-<hash>.js`：54 位学者的简介与照片
+
+### scripts/
+
+| 文件 | 职责 |
+|---|---|
+| `build_hub.py` | 构建 practice：合并数据 → 压缩 → 指纹命名 → 回写 HTML 与 prefetch |
+| `minify.js` | terser 入口；缺失时显式告警并退化为保守压缩 |
+| `audit-all.js` | 全域体检（领域/分支/证据分级/DOI/孤立节点/完整性） |
+| `backfill-doi.js` | 英文式证据的 DOI 核验（题名相似度 ≥0.8、年份差 ≤2） |
+| `backfill-doi-zh.js` | 中文叙述式证据：候选生成 → 人工核对 → 按判定清单写入 |
+| `verify-dois.js` | 全量 DOI 回查 Crossref（存在性 / 类型 / 年份） |
+| `hub-check.js` | UI 回归 55 项断言 |
+| `smoke-live.js` | 生产站点冒烟（渲染 + 控制台） |
+| `probe-fold.js` | 折叠态侧栏实测 |
+| `verify-fonts.js` | 字体解码回归 |
+| `check-cdn.py` | 三页全部资源 200 扫描（专兜 CSS/图片 404） |
+
+### reports/
+
+- `AUDIT-2026-10.md`：全域体检报告（口径、五领域数据、每轮改动与遗留）
+- `doi-zh-brain-decisions.json`：脑科学 DOI 的**人工逐条判定**记录（不可再生，保留）
+- `doi-zh-brain-titles*.json`：人工提供的原始题名清单（不可再生，保留）
+
+> 其余 JSON 为脚本输出的机器结果，已加入 `.gitignore`，需要时重跑脚本即可生成。
 
 ---
 
-*文档生成时间：2026-10；覆盖仓库 `Neo-icc/edu-knowledge-hub` main 分支（截至提交 `381e721`）。*
+*文档时间：2026-10；覆盖 `Neo-icc/edu-knowledge-hub` main 分支。数字口径以 `scripts/audit-all.js` 为准。*
