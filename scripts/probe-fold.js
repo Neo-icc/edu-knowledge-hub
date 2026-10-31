@@ -52,7 +52,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   for (const [name, hash] of [["家长·老师", "#/educator"], ["教育研究者", "#/researcher"]]) {
     await send("Page.navigate", { url: BASE + hash });
-    await sleep(3500);
+    await sleep(6000);
     const before = await ev(probe(hash));
     // 真实折叠：点侧栏头部那枚按钮（写 localStorage 对 practice 不生效，它的状态由点击驱动）
     const clicked = await ev(`(function(){
@@ -61,7 +61,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       if (!b) return 'no-button';
       b.click(); return 'clicked:' + (b.id || b.className);
     })()`);
-    await sleep(1200);
+    await sleep(1500);
     const after = await ev(probe(hash));
     console.log(`\n=== ${name} ===  (${clicked})`);
     console.log("  展开态:", before);
