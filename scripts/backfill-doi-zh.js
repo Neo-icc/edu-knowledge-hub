@@ -183,16 +183,24 @@ const sim = (a, b) => Math.max(jac(a, b), dice(a, b));
   }
 
   if (titlesMode) {
-    const tp = path.join(OUT, `doi-zh-${domain}-titles.json`);
+    const tpArg = process.argv.indexOf("--titles-file");
+    const tp = tpArg > -1 ? path.resolve(process.argv[tpArg + 1]) : path.join(OUT, `doi-zh-${domain}-titles.json`);
     if (!fs.existsSync(tp)) return console.log("缺少 titles 文件");
     const repPath = path.join(OUT, `doi-zh-${domain}.json`);
     const R = JSON.parse(fs.readFileSync(repPath, "utf8"));
     const T = JSON.parse(fs.readFileSync(tp, "utf8"));
     const out = [];
     for (const [k, title] of Object.entries(T)) {
-      const idx = +k;
+      /* 支持两种键：报告里的序号 "37"，或更直观的 "E185[0]" */
+      let idx;
+      const m = k.match(/^([A-Z]\d+)\[(\d+)\]$/);
+      if (m) {
+        idx = R.items.findIndex((x) => x.id === m[1] && x.i === +m[2]);
+      } else {
+        idx = +k;
+      }
       const item = R.items[idx];
-      if (!item) { out.push({ idx, title, doi: null, why: "无对应条目" }); continue; }
+      if (!item) { out.push({ idx, key: k, title, doi: null, why: "无对应条目" }); continue; }
       const hits = await cr(title, item.year, 10);
       let best = null;
       for (const it of hits) {
@@ -209,7 +217,8 @@ const sim = (a, b) => Math.max(jac(a, b), dice(a, b));
         score: best ? best.s : null, crossrefTitle: best ? best.ct : null, refYear: item.year, crossYear: best ? best.y : null });
       await sleep(180);
     }
-    fs.writeFileSync(path.join(OUT, `doi-zh-${domain}-titles-result.json`),
+    const outName = tpArg > -1 ? path.basename(tp).replace(/\.json$/, "-result.json") : `doi-zh-${domain}-titles-result.json`;
+    fs.writeFileSync(path.join(OUT, outName),
       JSON.stringify({ generatedAt: new Date().toISOString(), items: out }, null, 1), "utf8");
     const okN = out.filter((x) => x.doi).length;
     console.log(`按题名核验 ${out.length} 条 → 命中 ${okN}`);

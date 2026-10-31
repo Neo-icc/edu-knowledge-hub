@@ -72,12 +72,35 @@ for (const [a, b] of links) {
   deg.set(b, (deg.get(b) || 0) + 1);
 }
 
+/* ---------- 证据分级（与 practice/js/app.js 的 evTier 保持同一规则） ----------
+   doi    → 有 DOI，可直达原文
+   ref    → 标注了具体作品（书名号 / 英文题名 / 期刊名），可据此定位
+   trace  → 只有作者与年份，无法定位到具体文献
+   review → 概括性表述
+   注意：DOI 率不是质量指标。一手经典（《理想国》）本来就没有 DOI，
+   用 DOI 率衡量基础理论会得出「1.2%，很差」的错误结论——要看「可定位率」。 */
+const hasWork = (t) =>
+  /《[^》]+》/.test(t) ||
+  /[A-Za-z]{3,}([\s,&-]+[A-Za-z]{2,}){2,}/.test(t) ||
+  /(Journal|Review|Press|学报|期刊|出版社|杂志)/.test(t);
+const evTier = (ev, doi) =>
+  doi ? "doi" : hasWork(ev.text || "") ? "ref" : (/\d{4}/.test(ev.text || "") ? "trace" : "review");
+
+function tierOf(id) {
+  const t = { doi: 0, ref: 0, trace: 0, review: 0 };
+  const dt = details[id] || {};
+  const mapped = dois[id] || [];
+  (dt.evidence || []).forEach((ev, i) => { t[evTier(ev, mapped[i])] += 1; });
+  return t;
+}
+
 /* ---------- 领域 / 分支维度 ---------- */
 const domStat = [];
 const branchStat = [];
 for (const d of domains) {
   const ents = roster.filter(r => r[3] === d.id);
   let dLinks = 0, dDoi = 0, dEv = 0, dDetail = 0, dOrphan = 0;
+  const dTier = { doi: 0, ref: 0, trace: 0, review: 0 };
   for (const r of ents) {
     const id = r[0];
     dLinks += deg.get(id) || 0;
@@ -89,14 +112,18 @@ for (const d of domains) {
       const mapped = (dois[id] || []).filter(Boolean).length;
       dDoi += mapped;
     }
+    const t = tierOf(id);
+    for (const k of Object.keys(dTier)) dTier[k] += t[k];
     if (!(deg.get(id) || 0)) dOrphan++;
   }
   domStat.push({
     id: d.id, name: d.name, branches: d.branches.length,
     entries: ents.length, links: dLinks, detail: dDetail,
-    evidence: dEv, doi: dDoi, orphan: dOrphan,
+    evidence: dEv, doi: dDoi, orphan: dOrphan, tier: dTier,
     avgDeg: ents.length ? +(dLinks * 2 / ents.length).toFixed(2) : 0,
     fracCover: dEv ? +(dDoi / dEv * 100).toFixed(1) : 0,
+    /* 可定位率 = (DOI + 有出处) / 证据数，这才是这一层的质量口径 */
+    locatable: dEv ? +(((dTier.doi + dTier.ref) / dEv) * 100).toFixed(1) : 0,
   });
 
   for (const b of d.branches) {
@@ -194,11 +221,22 @@ console.log(`条目 ${report.totals.entries} · 关联 ${report.totals.links}（
 console.log(`领域 ${report.totals.domains} · 分支 ${report.totals.branches}\n`);
 
 console.log("【领域总览】");
-console.log(pad("领域", 14) + lpad("分支", 6) + lpad("条目", 6) + lpad("关联", 7) + lpad("均度", 7) + lpad("证据", 7) + lpad("DOI率", 8) + lpad("孤立", 6));
+console.log(pad("领域", 14) + lpad("条目", 6) + lpad("关联", 7) + lpad("均度", 7) + lpad("证据", 7) + lpad("DOI", 6) + lpad("有出处", 8) + lpad("仅作者年", 9) + lpad("可定位率", 10));
 for (const d of domStat) {
-  console.log(pad(d.name, 14) + lpad(d.branches, 6) + lpad(d.entries, 6) + lpad(d.links, 7) +
-    lpad(d.avgDeg, 7) + lpad(d.evidence, 7) + lpad(d.fracCover + "%", 8) + lpad(d.orphan, 6));
+  console.log(pad(d.name, 14) + lpad(d.entries, 6) + lpad(d.links, 7) +
+    lpad(d.avgDeg, 7) + lpad(d.evidence, 7) + lpad(d.tier.doi, 6) + lpad(d.tier.ref, 8) +
+    lpad(d.tier.trace, 9) + lpad(d.locatable + "%", 10));
 }
+const TT = domStat.reduce((a, d) => {
+  for (const k of Object.keys(a)) a[k] += d.tier[k];
+  return a;
+}, { doi: 0, ref: 0, trace: 0, review: 0 });
+const TOT = TT.doi + TT.ref + TT.trace + TT.review;
+console.log(pad("合计", 14) + lpad("", 6) + lpad("", 7) + lpad("", 7) + lpad(TOT, 7) +
+  lpad(TT.doi, 6) + lpad(TT.ref, 8) + lpad(TT.trace, 9) +
+  lpad(((TT.doi + TT.ref) / TOT * 100).toFixed(1) + "%", 10));
+console.log("  说明：DOI 率不是质量指标。一手经典（《理想国》《大教学论》）没有 DOI，");
+console.log("        若只看 DOI 率会把基础理论误判为最差；「可定位率」才是这一层的口径。");
 
 console.log("\n【分支空缺：条目 ≤ 3 或 关联 = 0】");
 const weak = branchStat.filter(b => b.entries <= 3 || b.links === 0)

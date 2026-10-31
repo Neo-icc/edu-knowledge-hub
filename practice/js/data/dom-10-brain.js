@@ -454,7 +454,7 @@ E426: {
     { topic: "是否存在基本情绪", sides: [{ who: "艾克曼（Ekman）", view: "存在跨文化普遍、可识别的离散情绪类别" }, { who: "barrett", view: "类别由概念建构，跨情境变异大于共性" }], stake: "情绪教育应教类别还是教维度与情境" },
     { topic: "情绪课程的取向", sides: [{ who: "barrett", view: "应教情绪粒度、情境归因与概念区分" }, { who: "艾克曼（Ekman）", view: "应教基本情绪的识别与表达规则" }], stake: "社会情绪学习课程如何编排" }
   ],
-  evidence: [{ text: "Barrett（2017）情绪如何被制造", doi: null }, { text: "Ekman 等（1969）面部表情的跨文化元素", doi: null }],
+  evidence: [{ text: "Barrett《情绪如何被制造》（2017）", doi: null }, { text: "Ekman 等（1969）面部表情的跨文化元素", doi: null }],
   applications: ["教情绪词汇、情境归因与调节策略", "不用情绪脸谱测验给学生贴标签", "区分情绪体验与行为责任"],
   terms: [{ t: "基本情绪", en: "basic emotion", d: "离散且具普遍性的情绪类别" }, { t: "心理建构论", en: "psychological constructionism", d: "情绪由核心情感与概念构成" }, { t: "核心情感", en: "core affect", d: "效价与唤醒构成的状态" }, { t: "情绪粒度", en: "emotion granularity", d: "区分细微情绪状态的精细度" }]
 },
@@ -658,7 +658,7 @@ E443: {
     { topic: "音乐训练能否迁移到语言与阅读", sides: [{ who: "patel", view: "存在以节奏为中介的合理迁移路径" }, { who: "萨拉（Sala）", view: "远迁移效应小且不稳定，多受设计与期望影响" }], stake: "音乐课能否作为语言干预" },
     { topic: "训练的时序与剂量", sides: [{ who: "patel", view: "长期、有节奏互动的训练才可能产生迁移" }, { who: "萨拉（Sala）", view: "短期训练研究已显示效应不稳定，剂量不是唯一解释" }], stake: "是否应把音乐纳入语言干预课程" }
   ],
-  evidence: [{ text: "Patel（2008）音乐、语言与脑", doi: null }, { text: "Sala 与 Gobet（2020）音乐训练与认知的元分析", doi: null }],
+  evidence: [{ text: "Patel《音乐、语言与脑》（2008）", doi: null }, { text: "Sala 与 Gobet（2020）音乐训练与认知的元分析", doi: null }],
   applications: ["音乐活动用于节奏、听觉与情绪目标", "不承诺音乐训练能提升阅读成绩", "语言课可用韵律与节奏辅助语音教学"],
   terms: [{ t: "共享资源", en: "shared resources", d: "两个领域竞争同一加工资源" }, { t: "节奏", en: "rhythm", d: "时间上的规律性结构" }, { t: "句法", en: "syntax", d: "组合单位的规则系统" }, { t: "远迁移", en: "far transfer", d: "迁移到结构不同的领域" }]
 },
@@ -814,7 +814,7 @@ E456: {
     { topic: "早期投资的政策优先级", sides: [{ who: "bruer", view: "不应以神经迷思为由过度倾斜资源" }, { who: "赫克曼（Heckman）", view: "早期投资的社会回报率高于后期补偿" }], stake: "政策应优先投资哪个年龄段" },
     { topic: "早教市场的规制", sides: [{ who: "bruer", view: "应强制披露证据，限制「关键期」营销" }, { who: "hattie", view: "家长选择与市场竞争也能淘汰无效产品" }], stake: "是否需要专门监管早教宣传" }
   ],
-  evidence: [{ text: "Bruer（1999）前三年的迷思", doi: null }, { text: "Knudsen（2004）敏感期经济学", doi: null }],
+  evidence: [{ text: "Bruer《前三年的迷思》（1999）", doi: null }, { text: "Knudsen（2004）敏感期经济学", doi: null }],
   applications: ["识别：「三岁定终身」「窗口已关闭」类话术", "纠正：用渐变敏感期与补偿干预的证据回应", "把资源投向课程质量与师资而非焦虑性消费"],
   terms: [{ t: "关键期", en: "critical period", d: "经验不可或缺的严格时间窗" }, { t: "突触修剪", en: "synaptic pruning", d: "按使用经验消除多余突触" }, { t: "早教市场", en: "early education market", d: "面向婴幼儿的商业教育服务" }, { t: "敏感期", en: "sensitive period", d: "经验塑造效应最强的窗口" }]
 },
@@ -850,7 +850,7 @@ E459: {
     { topic: "边界的具体划定", sides: [{ who: "goswami", view: "应严格限制教育场景的神经数据使用" }, { who: "霍华德-琼斯（Howard-Jones）", view: "在知情同意的形成性评估中可有条件使用" }], stake: "学校能否开展脑数据相关的教学创新" },
     { topic: "脑数据的所有权", sides: [{ who: "goswami", view: "神经数据不应由学校或商业机构持有" }, { who: "gabrieli", view: "在伦理审查与匿名化前提下可用于研究" }], stake: "教育脑数据应如何治理" }
   ],
-  evidence: [{ text: "Goswami（2006）神经科学与教育：从研究到实践", doi: null }, { text: "经济合作与发展组织（2002）理解脑：走向新的学习科学", doi: null }],
+  evidence: [{ text: "Goswami（2006）神经科学与教育：从研究到实践", doi: null }, { text: "经济合作与发展组织《理解脑：走向新的学习科学》（2002）", doi: null }],
   applications: ["识别：学校是否采集脑数据或购买神经筛查", "纠正：最小必要、知情同意、不用于分流", "建立数据治理与家长沟通机制"],
   terms: [{ t: "神经伦理", en: "neuroethics", d: "神经科学应用的伦理问题" }, { t: "脑数据隐私", en: "brain data privacy", d: "神经与生理数据的保护" }, { t: "神经标签", en: "neuro-labeling", d: "用脑指标给人分类与定性" }, { t: "知情同意", en: "informed consent", d: "充分告知后的自愿同意" }]
 },
@@ -862,7 +862,7 @@ E460: {
     { topic: "警示与安抚的平衡", sides: [{ who: "bruer", view: "应强调证据边界，避免制造恐慌" }, { who: "肖恩科夫（Shonkoff）", view: "强调早期风险有助于争取政策与社会支持" }], stake: "公共传播应侧重风险还是可塑性" },
     { topic: "风险沟通的策略", sides: [{ who: "bruer", view: "应给出可做的日常建议而非倒计时" }, { who: "肖恩科夫（Shonkoff）", view: "不强调风险会削弱对早期干预的投入" }], stake: "面向家长的科普应如何措辞" }
   ],
-  evidence: [{ text: "Bruer（2002）避免儿科医生的错误", doi: null }, { text: "Bruer（1999）前三年的迷思", doi: null }],
+  evidence: [{ text: "Bruer（2002）避免儿科医生的错误", doi: null }, { text: "Bruer《前三年的迷思》（1999）", doi: null }],
   applications: ["识别：「窗口关闭」「黄金期倒计时」类话术", "纠正：使用概率性与条件性表述", "家长沟通聚焦日常互动与睡眠等可控因素"],
   terms: [{ t: "科学传播", en: "science communication", d: "向公众传递研究结论的实践" }, { t: "家长焦虑", en: "parental anxiety", d: "对子女发展窗口的担忧" }, { t: "关键窗口", en: "critical window", d: "被夸大的时间限制说法" }, { t: "商业化", en: "commercialization", d: "以盈利为目的推广服务" }]
 },

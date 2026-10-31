@@ -133,7 +133,7 @@ E194: {
   disagreements: [
     { topic: "情绪记忆的准确性", sides: [{ who: "ledoux", view: "情绪增强记忆的强度与生动性" }, { who: "wixted", view: "增强的是主观确信而非客观准确，闪光灯记忆常出错" }], stake: "强度与准确性是否同步提升" }
   ],
-  evidence: [{ text: "LeDoux（1996）情绪脑", doi: null }, { text: "Cahill 与 McGaugh（1998）杏仁核与情绪记忆调节", doi: null }],
+  evidence: [{ text: "LeDoux《情绪脑》（1996）", doi: null }, { text: "Cahill 与 McGaugh（1998）杏仁核与情绪记忆调节", doi: null }],
   applications: ["用适度情绪投入提升学习记忆", "避免用恐惧与羞辱作为课堂管理手段", "对创伤性经验提供情绪支持与重构机会"],
   terms: [{ t: "杏仁核", en: "amygdala", d: "处理威胁与情绪显著性的关键脑区" }, { t: "情绪唤醒", en: "emotional arousal", d: "情绪激活的生理强度" }, { t: "恐惧条件化", en: "fear conditioning", d: "中性线索与威胁配对形成恐惧" }, { t: "闪光灯记忆", en: "flashbulb memory", d: "对重大事件生动但未必准确的记忆" }]
 },
@@ -144,7 +144,7 @@ E195: {
   disagreements: [
     { topic: "消退与干扰", sides: [{ who: "ebbinghaus", view: "遗忘随时间自然消退，呈指数曲线" }, { who: "wixted", view: "曲线形状可由干扰与线索竞争解释，未必是消退" }], stake: "时间是直接原因还是干扰累积的代理变量" }
   ],
-  evidence: [{ text: "Wixted（2004）遗忘心理学与神经科学综述", doi: null }, { text: "Ebbinghaus（1885）遗忘曲线", doi: null }],
+  evidence: [{ text: "Wixted（2004）遗忘心理学与神经科学综述", doi: null }, { text: "Ebbinghaus《论记忆》（1885）遗忘曲线", doi: null }],
   applications: ["用多样化线索与情境练习提取", "把相似内容分开学习以减少干扰", "定期复习并配合再学习"],
   terms: [{ t: "前摄干扰", en: "proactive interference", d: "旧学习干扰新学习" }, { t: "倒摄干扰", en: "retroactive interference", d: "新学习干扰旧保持" }, { t: "提取失败", en: "retrieval failure", d: "痕迹仍在但线索不足" }, { t: "再学习节省", en: "savings", d: "重学比初学更快，说明痕迹残留" }]
 },
@@ -276,7 +276,7 @@ E207: {
   disagreements: [
     { topic: "杏仁核与恐惧体验", sides: [{ who: "ledoux", view: "杏仁核主要负责威胁检测与防御反应，不等同于主观恐惧" }, { who: "damasio", view: "情绪体验与身体反应不可截然二分，主观感受具功能作用" }], stake: "防御反应与主观恐惧是否应分离" }
   ],
-  evidence: [{ text: "LeDoux（1996）情绪脑", doi: null }, { text: "LeDoux（2000）情绪回路与杏仁核", doi: null }],
+  evidence: [{ text: "LeDoux《情绪脑》（1996）", doi: null }, { text: "LeDoux（2000）情绪回路与杏仁核", doi: null }],
   applications: ["建立可预测的课堂常规以降低威胁感", "用渐进暴露而非强制面对处理考试焦虑", "避免用羞辱与突然惩罚制造恐惧联结"],
   terms: [{ t: "杏仁核", en: "amygdala", d: "威胁检测与恐惧学习的关键脑区" }, { t: "皮层下通路", en: "subcortical pathway", d: "不经皮层直达杏仁核的快速通路" }, { t: "恐惧消退", en: "fear extinction", d: "新学习抑制旧恐惧反应" }, { t: "威胁检测", en: "threat detection", d: "识别潜在危险刺激的过程" }]
 },
@@ -309,7 +309,7 @@ E210: {
   disagreements: [
     { topic: "体感标记的必要性", sides: [{ who: "damasio", view: "体感信号是现实决策的必要组成" }, { who: "ledoux", view: "决策可由多种平行系统支持，体感标记只是其中之一" }], stake: "情绪是决策的必要条件还是辅助线索" }
   ],
-  evidence: [{ text: "Damasio（1994）笛卡尔的错误", doi: null }, { text: "Bechara 等（1994）腹内侧前额叶损伤与决策", doi: null }],
+  evidence: [{ text: "Damasio《笛卡尔的错误》（1994）", doi: null }, { text: "Bechara 等（1994）腹内侧前额叶损伤与决策", doi: null }],
   applications: ["承认情绪在判断中的作用而非压制", "用情境模拟帮助学生练习价值权衡", "把反思情绪反应纳入决策教学"],
   terms: [{ t: "体感标记", en: "somatic marker", d: "以身体状态表征选项价值" }, { t: "腹内侧前额叶", en: "ventromedial prefrontal cortex", d: "整合情绪与价值的关键脑区" }, { t: "现实决策", en: "real-life decision making", d: "涉及个人与社会后果的选择" }, { t: "价值权衡", en: "value trade-off", d: "在冲突目标间做取舍" }]
 },
@@ -364,7 +364,7 @@ E215: {
   disagreements: [
     { topic: "前后分工的严格性", sides: [{ who: "wernicke", view: "理解位于后部、产出位于前部，分工清晰" }, { who: "hickok", view: "前后区均参与多个环节，分工是概率性的" }], stake: "解剖分区能否对应功能模块" }
   ],
-  evidence: [{ text: "Wernicke（1874）失语症的症状复合体", doi: null }, { text: "Hickok 与 Poeppel（2007）言语加工双流模型", doi: null }],
+  evidence: [{ text: "Wernicke《失语症的症状复合体》（1874）", doi: null }, { text: "Hickok 与 Poeppel（2007）言语加工双流模型", doi: null }],
   applications: ["区分「听不懂」与「说不出」的不同支持", "为理解困难学生提供视觉与语境支持", "用多模态输入降低语言负荷"],
   terms: [{ t: "韦尼克区", en: "Wernicke's area", d: "左侧颞上回后部的言语理解区" }, { t: "理解性失语", en: "receptive aphasia", d: "言语流畅但理解严重受损" }, { t: "双重分离", en: "double dissociation", d: "两种功能可相互独立受损" }, { t: "双流模型", en: "dual-stream model", d: "腹侧语义与背侧语音通路" }]
 },
@@ -375,7 +375,7 @@ E216: {
   disagreements: [
     { topic: "阅读通路的普适性", sides: [{ who: "dehaene", view: "不同文字系统的阅读收敛到相似网络" }, { who: "gabrieli", view: "文字系统差异导致通路权重不同，普适性有限" }], stake: "跨语言阅读是否存在统一神经签名" }
   ],
-  evidence: [{ text: "Dehaene（2009）阅读脑", doi: null }, { text: "Dehaene 等（2010）阅读习得的神经变化", doi: null }],
+  evidence: [{ text: "Dehaene《阅读脑》（2009）", doi: null }, { text: "Dehaene 等（2010）阅读习得的神经变化", doi: null }],
   applications: ["系统教授字形与语音的对应规则", "把阅读理解与口语语义网络连接", "为阅读困难提供多感官形音训练"],
   terms: [{ t: "视觉词形区", en: "visual word form area", d: "识别书面词形的左侧枕颞区" }, { t: "神经元再利用", en: "neuronal recycling", d: "文化技能复用既有神经回路" }, { t: "形音对应", en: "grapheme–phoneme mapping", d: "字形与语音的对应规则" }, { t: "语义网络", en: "semantic network", d: "存储词义知识的分布式系统" }]
 },
@@ -441,7 +441,7 @@ E222: {
   disagreements: [
     { topic: "编码的数量", sides: [{ who: "dehaene", view: "三重编码足以解释主要数学认知" }, { who: "butterworth", view: "还需空间与序列表征，模型不完整" }], stake: "三编码是否覆盖数学认知的核心" }
   ],
-  evidence: [{ text: "Dehaene（1997）数字感", doi: null }, { text: "Dehaene 等（1999）数字加工的脑成像", doi: null }],
+  evidence: [{ text: "Dehaene《数字感》（1997）", doi: null }, { text: "Dehaene 等（1999）数字加工的脑成像", doi: null }],
   applications: ["把符号、口语与数量经验同时呈现", "用数轴与实物建立空间—数量映射", "口诀与估算训练分别针对不同编码"],
   terms: [{ t: "三重编码", en: "triple code", d: "符号、言语与数量三种数字表征" }, { t: "近似数量编码", en: "analog magnitude code", d: "对数量的近似内部表征" }, { t: "事实提取", en: "fact retrieval", d: "直接从长时记忆取出算术事实" }, { t: "数轴", en: "number line", d: "数量的空间化表征" }]
 },
@@ -551,7 +551,7 @@ E232: {
   disagreements: [
     { topic: "桥接的可能性", sides: [{ who: "bruer", view: "短期应主要依靠认知心理学中介，脑科学作用有限" }, { who: "dehaene", view: "脑机制能提供约束条件与新的教学假设，不应低估" }], stake: "脑科学在教育研究中应扮演何种角色" }
   ],
-  evidence: [{ text: "Bruer（1997）教育与脑科学的桥接", doi: null }, { text: "Dehaene（2009）阅读脑", doi: null }],
+  evidence: [{ text: "Bruer（1997）教育与脑科学的桥接", doi: null }, { text: "Dehaene《阅读脑》（2009）", doi: null }],
   applications: ["以课堂效果而非神经机制作为教学决策依据", "把神经证据定位为假设来源与约束条件", "要求教育产品披露可复现的行为证据"],
   terms: [{ t: "解释层级", en: "levels of explanation", d: "从分子到行为到社会的不同描述层" }, { t: "教育神经科学", en: "educational neuroscience", d: "连接脑机制与教育实践的研究领域" }, { t: "中介变量", en: "mediating variable", d: "连接机制与结果的中间过程" }, { t: "双向协作", en: "bidirectional collaboration", d: "研究者与实践者共同定义问题" }]
 }
