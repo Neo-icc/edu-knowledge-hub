@@ -470,19 +470,32 @@ edu-knowledge-hub/                     ← Hub 门户（仓库根目录）
 ### 10.1 仓库与部署
 
 - 仓库：`Neo-icc/edu-knowledge-hub`
-- 分支：`main`
-- 托管：GitHub Pages
-- 公网地址：https://neo-icc.github.io/edu-knowledge-hub/
+- 分支：`main`（GitHub Pages 源为 main 根目录）
+- 主域名：https://www.epck.space/ （`CNAME` 文件 + 腾讯云 CDN，源站 `neo-icc.github.io`）
+- 裸域：https://epck.space/ （经 `_redirects` 301 到 www，路径与查询串保留）
+- 源站：https://neo-icc.github.io/edu-knowledge-hub/ （会 301 到主域名）
+- 推送后 GitHub Pages 自动重建，约 30–60 秒生效；可用
+  `gh api repos/Neo-icc/edu-knowledge-hub/pages/builds/latest` 查构建状态。
 
-### 10.2 版本号管理
+### 10.2 版本号与缓存
 
-静态资源的缓存版本号写在 `practice/index.html`（`css/styles.css?v=47`、`js/app.js?v=48` 等）。**每次改动 CSS/JS 后必须 bump 版本号**，否则浏览器缓存旧资源，用户看不到新改动（本轮曾因此踩坑）。
+**不要再手工维护版本号。** 早期做法是在 `practice/index.html` 里写 `?v=47` 并每次 bump，漏改就会让用户看到旧资源。现在改成两层机制：
+
+1. **构建产物按内容指纹命名**（`bundle-data-<hash>.js`），配合 CDN 的
+   `Cache-Control: public, max-age=31536000, immutable`，文件内容不变就永远命中缓存，内容一变文件名就变，天然失效。
+2. **门户 iframe 的 `v=` 参数自动取指纹**：`index.html` 从 `link[rel=prefetch]` 里
+   正则抽出 `bundle-app-<hash>`，拼成 `practice/?embed=1&v=<hash>` 传给子应用。
+   这解决的是另一类问题——手机端（微信 X5 内核）本地缓存了旧 HTML，会去请求已删除的旧 bundle → 404 → 白屏。
 
 ### 10.3 已知注意事项
 
-- 改 CSS/JS 后必须 bump 版本号（见上）。
-- 用户侧需 Ctrl+Shift+R 强刷。
+- **删除旧 bundle 与换新 HTML 必须在同一次提交里**，且推送后有一段缓存窗口：
+  HTML 为 `max-age=600`，最坏情况下 10 分钟内仍可能有人拿着旧 HTML 去请求已删除的旧 bundle 而白屏。
+  若要彻底消除这个窗口，**旧 bundle 应留一版再删**（下次发布时删上一代）。
+- 推送后建议立即跑线上冒烟：`node scripts/smoke-live.js`（需 Edge + `ws` 模块），
+  断言首页结构、两个 iframe 实际渲染内容、新数据包可达、控制台零错误。
 - 图片导出用固定 hex 颜色，与站点 oklch 色系是「近似对应」，非 1:1 一致。
+- 构建需要 terser；本机若缺失会退化为保守压缩（体积 +200KB），`minify.js` 会显式告警。
 
 ---
 
