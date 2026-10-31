@@ -381,6 +381,14 @@ img, svg { display: block; max-width: 100%; }
 /* 嵌入门户 iframe 时由 Hub 顶栏承担品牌/分享/主题，本页顶栏隐藏 */
 body.embed .topbar { display: none; }
 
+/* 但折叠态的「展开侧栏」按钮就住在顶栏里：embed 规则会把它一起藏掉，
+   结果家长·老师入口折叠侧栏后没有任何可点的展开入口，只能刷新。
+   这里在「嵌入 + 折叠」时恢复一条极简顶栏，只留展开按钮，
+   面包屑与分享/主题仍交给 Hub，避免重复。 */
+body.embed.nav-fold .topbar { display: flex; }
+body.embed.nav-fold .topbar .crumb,
+body.embed.nav-fold .topbar .topbar-actions { display: none; }
+
 /* ---------- 排版 ---------- */
 .eyebrow {
   display: block;
