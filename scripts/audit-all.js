@@ -183,6 +183,18 @@ for (const s of (A.scenarios || [])) {
   for (const d of set) scenDom[d] = (scenDom[d] || 0) + 1;
 }
 
+/* 术语卡：按名称去重，规则与 core.js 的 uniqueTerms 一致。
+   注意不能用对象序列化当 key——那样永远不会去重，数字会虚高。 */
+const termNames = new Set();
+let termRaw = 0;
+for (const d of Object.values(details)) {
+  for (const t of (d.terms || [])) {
+    termRaw += 1;
+    const k = typeof t === "string" ? t : (t.t || "");
+    if (k && k.trim()) termNames.add(k.trim());
+  }
+}
+
 const report = {
   meta: A.meta,
   totals: {
@@ -195,6 +207,8 @@ const report = {
     withDetail: Object.keys(details).length,
     withDoi: Object.values(dois).filter(a => a.some(Boolean)).length,
     scenarios: (A.scenarios || []).length,
+    terms: termNames.size,
+    termsRaw: termRaw,
     activities: Object.keys(A.activities || {}).length,
     thinkers: Object.keys(A.scholars || {}).length,
   },
@@ -217,7 +231,8 @@ const pad = (s, n) => String(s).padEnd(n);
 const lpad = (s, n) => String(s).padStart(n);
 
 console.log("\n===== 全域体检 · 教育与心智知识图谱 =====\n");
-console.log(`条目 ${report.totals.entries} · 关联 ${report.totals.links}（原始 ${report.totals.linksRaw}，同配对同类型重复 ${report.totals.dupLinks}）· 详情 ${report.totals.withDetail} · 场景 ${report.totals.scenarios} · 人物 ${report.totals.thinkers}`);
+console.log(`条目 ${report.totals.entries} · 关联 ${report.totals.links}（原始 ${report.totals.linksRaw}，同配对同类型重复 ${report.totals.dupLinks}）· 详情 ${report.totals.withDetail}`);
+console.log(`场景 ${report.totals.scenarios} · 术语卡 ${report.totals.terms}（原始 ${report.totals.termsRaw}，按名称去重）· 人物 ${report.totals.thinkers} · 活动 ${report.totals.activities}`);
 console.log(`领域 ${report.totals.domains} · 分支 ${report.totals.branches}\n`);
 
 console.log("【领域总览】");
