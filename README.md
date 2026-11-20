@@ -79,6 +79,7 @@ TERSER_HOME="$HOME/.cache/wb-terser" python scripts/build_hub.py
 | `verify-dois.js` | 把全部 DOI 拉回 Crossref 复核存在性/类型/年份 |
 | `hub-check.js` | UI 回归（55 项断言：门户、顶栏、侧栏一致性、宽屏居中、移动端） |
 | `smoke-live.js` | 上线后冒烟：打开生产站点断言渲染结果与控制台错误 |
+| `uptime-check.js` | 可用性巡检：6 个入口（含 http）逐次探测并记日志，抓间歇性故障现场 |
 | `probe-fold.js` | 折叠态侧栏实测（点击驱动，不依赖改 localStorage） |
 | `verify-fonts.js` | 字体解码回归（项目曾因字体文件损坏全站静默回退系统字体） |
 | `check-cdn.py` | 扫描三页引用的全部资源是否 200，专门兜 CSS/图片 404（控制台不报错） |
